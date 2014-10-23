@@ -1,0 +1,127 @@
+/*
+ * Challenge 9
+ *
+ * written by           Low Saetern
+ * created on           22 October 2014
+ * last modified        22 October 2014
+ *
+ * Programming challenge 9 takes in a few inputs
+ * and converts it into decimal and binary.
+ * Before outputing, the input is processed by
+ * shl, shr, ror, rol and results are printed.
+ *
+ */
+
+program Pro9;
+#include("stdlib.hhf");
+// declare procedures
+procedure getUns8(prompt: string; min: uns8; max: uns8); @returns("al"); @forward;
+procedure showBits(value: byte); @forward;
+
+// define procedures
+// getUns8()
+procedure getUns8(prompt: string; min: uns8; max: uns8);
+begin getUns8;
+    forever
+        stdout.put(prompt);
+        try
+            stdin.flushInput();
+            stdin.getu8();
+            unprotected
+                breakif(al >= min && al <= max);
+                stdout.put("Enter a number from ", min, " to ", max, ".", nl);
+        anyexception
+            stdout.put("Enter a number from ", min, " to ", max, ".", nl);
+        endtry;
+    endfor;
+end getUns8; 
+
+// showBits()
+procedure showBits(value: byte);
+begin showBits;
+    push(eax);
+    push(ecx);
+
+    mov(value, al);
+    stdout.put("%");
+    for( mov(0, cl); cl < 8; inc(cl) ) do
+        shl(1, al);
+        if(@c) then
+            stdout.put("1");
+        else
+            stdout.put("0");
+        endif;
+
+        // print underscore after every nibble
+        if(cl == 3) then
+            stdout.put("_");
+        endif;
+    endfor;
+
+    pop(ecx);
+    pop(eax);
+end showBits;
+
+begin Pro9;
+// PART I
+stdout.put("PART ONE: ror,rol,shr,shl", nl);
+getUns8("Enter a number to convert to binary: ", 1, 255);
+
+stdout.newln();
+
+// display input value in binary + decimal
+stdout.put("input [decimal]: ", (type uns8 al), nl); 
+stdout.put("input [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// rotate input value right one bit
+ror(1, al);
+stdout.put("rotate right one [decimal]: ", (type uns8 al), nl);
+stdout.put("rotate right one [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// rotate input value left one bit
+rol(1, al);
+stdout.put("rotate left one [decimal]: ", (type uns8 al), nl);
+stdout.put("rotate left one [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// shift input value right one bit
+shr(1, al);
+stdout.put("shift right one [decimal]: ", (type uns8 al), nl);
+stdout.put("shift right one [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// shift input value left one bit
+shl(1, al);
+stdout.put("shift left one [decimal]: ", (type uns8 al), nl);
+stdout.put("shift left one [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// Part II
+stdout.put("PART TWO: add", nl);
+getUns8("Enter first number to start processing: ", 1, 255);
+
+// display input value in binary + decimal
+stdout.put("first input [decimal]: ", (type uns8 al), nl); 
+stdout.put("first input [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+mov(al, dl);
+
+getUns8("Enter second number to start processing: ", 1, 255);
+
+// display input value in binary + decimal
+stdout.put("second input [decimal]: ", (type uns8 al), nl); 
+stdout.put("second input [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+
+// add both values together
+add(dl, al);
+if(@c) then
+    stdout.put("CARRY BIT SET/OVERFLOW", nl);
+endif;
+
+stdout.put("sum [decimal]: ", (type uns8 al), nl); 
+stdout.put("sum [binary]: ");
+showBits(al); stdout.newln(); stdout.newln();
+end Pro9;

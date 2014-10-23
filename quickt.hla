@@ -1,0 +1,12 @@
+program quickt;
+#include("stdlib.hhf");
+static
+    number      :uns32   :=4242;
+    multiplier  :uns32   := 42;
+begin quickt;
+    mov(%1111_1111, al);
+    add(%0000_0001, al);
+    if(@c) then
+        stdout.put("OVERFLOW ");
+    endif;
+end quickt;

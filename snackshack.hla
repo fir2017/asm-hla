@@ -1,0 +1,287 @@
+/*
+ * SnackShack [project 1]
+ *
+ * written by			Low Saetern
+ * created on			4 October 2014
+ * last modified on		11 October 2014
+ * 
+ * to-do's: 
+ * [removed] 1. receipt change from credit to usd?
+ * 2. replace hla high level conditions (ie. operators) w/ low level flags, etc...
+ * 3. clean up code by removing repetition
+ *
+ */
+ 
+program SnackShack;
+#include("stdlib.hhf");
+
+// forward declaration
+procedure buyItem(prodName: string; prodSTK: uns8; prodCost: uns8); @returns("al"); @forward;
+procedure getUserInput(prompt: string; min: uns8; max: uns8); @returns("al"); @forward;
+procedure printReceipt(prodName: string; prodSTK: uns8; prodCost: uns8); @forward;
+
+static
+	// list of yummy food + drinks to buy
+	doritosCost	:uns8		:=10;
+	doritosSTK	:uns8		:=5;
+	caramelCost	:uns8		:=10;
+	caramelSTK	:uns8		:=5;
+	sunnydCost	:uns8		:=10;
+	sunnydSTK	:uns8		:=5;
+	yogurtCost	:uns8		:=10;
+	yogurtSTK	:uns8		:=5;
+	jerkyCost	:uns8		:=10;
+	jerkySTK	:uns8		:=5;
+	
+	totalItems	:uns8;
+	totalCost	:uns8;
+	credit		:uns8;
+
+// define procedures
+
+// GET USER PROMPT
+procedure getUserInput(prompt: string; min: uns8; max: uns8);
+begin getUserInput;	
+	forever
+		stdout.put(prompt);		
+		try
+			stdin.flushInput();
+			stdin.getu8();
+			unprotected
+				breakif(al >= min && al <= max);
+				stdout.put(nl, "> Please enter the right number.", nl, "> [we accept credits between 1-255 only]", nl,nl);
+		anyexception
+			stdout.put(nl, "> Please enter the right 	number.", nl, "> [we accept credits between 1-255 only]", nl,nl);
+		endtry;
+	endfor;
+end getUserInput;
+
+// BUY ITEM
+procedure buyItem(prodName: string; prodSTK: uns8; prodCost: uns8);
+begin buyItem;
+	forever
+		mov(credit, al);
+		if(al >= prodCost) then	
+			
+			mov(prodCost, al);
+			sub(al, credit);
+			
+			// track total item purchased
+			add(1, totalItems);
+			
+			// calculate total item cost
+			mov(prodCost, al);
+			add(al, totalCost);		
+
+			stdout.newln();
+			stdout.put("> [C H A  -  C H I N! <", prodName, "> PURCHASED SUCCESSFULLY]...", nl);
+			stdout.newln();			
+		
+			break;
+		else
+			stdout.newln();
+			stdout.put("> Not enough credit to buy the item...", nl);
+			getUserInput("> Please enter enough credit to pay for the item: ", 1, 255);
+			add(al, credit);
+                        mov(credit, al);
+			cmp(al, prodCost);
+			if(@nc) then
+				// subtract cost from user's credit
+				mov(prodCost, al);
+				sub(al, credit);
+				
+				// track total item purchased
+				add(1, totalItems);
+				
+				// calculate total item cost
+				mov(prodCost, al);
+				add(al, totalCost);	
+				
+				stdout.newln();
+				stdout.put("> [C H A  -  C H I N! ", prodName, " PURCHASED SUCCESSFULLY]...", nl);
+				stdout.newln();
+				break;
+			else				
+				
+				stdout.put(nl,nl,"> Who are you kidding?", nl, "> Enter more credit or leave", nl,nl);
+                                mov(0, al);
+				break;
+			endif;
+		endif;
+	endfor;
+end buyItem;
+
+// PRINT RECEIPT
+procedure printReceipt(prodName: string; prodSTK: uns8; prodCost: uns8);
+begin printReceipt;
+	// calculate total type product purchased
+	mov(5, al);
+	sub(prodSTK, al);
+	mov(al, prodSTK);
+	
+	// calculate cost of total type product
+	mov(prodSTK, al);
+	mul(prodCost, al);
+	
+	stdout.put("		", prodSTK, "x ", prodName, nl, "   			                       [credits]: ", (type uns8 al), nl);		
+end printReceipt;
+
+// MAIN PROGRAM
+begin SnackShack;
+	console.cls();
+	forever
+		stdout.put(nl);
+		stdout.put("   / ^ ^ ^ ^ ^ ^ ^ ^ ^ \  ", nl);
+		stdout.put("   = Lowe's Fast Foods =  ", nl);
+		stdout.put("   = 1/10  Dollar Tree =  ", nl);
+		stdout.put("   = 'Price is Right!' =  ", nl);
+		stdout.put(" / - - - - - - - - - - - \", nl);
+		stdout.put("|Product (stock) -> Credit|", nl);
+		stdout.put("|- - - - - - - - - - - - -|", nl);
+		stdout.put("| 1. Doritos (", doritosSTK, ") ->    ", doritosCost, " |", nl);
+		stdout.put("| 2. Caramel (", caramelSTK, ") ->    ", caramelCost, " |", nl);
+		stdout.put("| 3. Sunny D (", sunnydSTK, ") ->    ", sunnydCost, " |", nl);
+		stdout.put("| 4. Yogurt  (", yogurtSTK, ") ->    ", yogurtCost, " |", nl);
+		stdout.put("| 5. Jerky   (", jerkySTK, ") ->    ", jerkyCost, " |", nl);
+		stdout.put("|- - - - - - - - - - - - -|", nl);
+		stdout.put("| Remaining credits:   ", credit, nl);
+		stdout.put("|+ + + + + + + + + + + + +|", nl);
+		
+		// setup to convert credit to USD currency
+		mov(credit, al);
+		
+		// save credit
+		push(eax);
+		
+		mov(0, ah);
+		div(100, ax);
+		if(@nc) then
+			mov(al, credit);
+		endif;
+		
+		stdout.put("| Remaining dollars:   ", credit, nl);
+		
+		mov(ah, al);
+		mov(0, ah);
+		div(25, ax);
+		if(@nc) then
+			mov(al, credit);
+		endif;
+		stdout.put("| Remaining quarters:  ", credit, nl);
+		
+		mov(ah, al);
+		mov(0, ah);
+		div(10, ax);
+		if(@nc) then
+			mov(al, credit);
+		endif;
+		stdout.put("| Remaining dimes:     ", credit, nl);
+		
+		mov(ah, al);
+		mov(0, ah);
+		div(5, ax);
+		if(@nc) then
+			mov(al, credit);
+		endif;
+		stdout.put("| Remaining nickels:   ", credit, nl);
+		
+		mov(ah, credit);
+		stdout.put("| Remaining pennies:   ", credit, nl);		
+		stdout.put("|= = = = = = = = = = = = =|", nl);
+		stdout.put("| Total Purchases:     ", totalItems, "  |", nl);
+		
+		// restore credit
+		pop(eax);
+		mov(al, credit);
+		
+		stdout.newln();
+		
+		// ask user to buy item		
+		getUserInput("> Enter an item number you want to buy: ", 1, 6);
+
+		if(al > 0 && al < 6) then
+			if(al == 1) then
+				if(doritosSTK < 1) then
+					stdout.put("> Item unavailable. Please select another item . . .", nl);
+				else
+					buyItem("Doritos", doritosSTK, doritosCost);	
+                                        if(al != 0) then
+                                            sub(1, doritosSTK);
+                                        endif;
+				endif;
+			endif;
+			if(al == 2) then
+				if(caramelSTK < 1) then
+					stdout.put("> Item unavailable. Please select another item . . .", nl);
+				else
+					buyItem("Caramel", caramelSTK, caramelCost);	
+                                         if(al != 0) then
+                                            sub(1, caramelSTK);
+                                        endif;
+
+				endif;
+			endif;
+			if(al == 3) then
+				if(sunnydSTK < 1) then
+					stdout.put("> Item unavailable. Please select another item . . .", nl);
+				else
+					buyItem("Sunny D", sunnydSTK, sunnydCost);	
+					if(al != 0) then
+                                            sub(1, sunnydSTK);
+                                        endif;
+				endif;
+			endif;
+			if(al == 4) then
+				if(yogurtSTK < 1) then
+					stdout.put("> Item unavailable. Please select another item . . .", nl);
+				else
+					buyItem("Yogurt", yogurtSTK, yogurtCost);	
+                                        if(al != 0) then
+                                            sub(1, yogurtSTK);
+                                        endif;
+				endif;
+			endif;
+			if(al == 5) then
+				if(jerkySTK < 1) then
+					stdout.put("> Item unavailable. Please select another item . . .", nl);
+				else
+					buyItem("Jerky", jerkySTK, jerkyCost);	
+					if(al != 0) then
+                                            sub(1, jerkySTK);
+                                        endif;
+				endif;
+			endif;
+		endif;
+		
+		
+		forever		
+			stdin.flushInput();
+			stdout.put("> Select another item to buy?", nl, "> Enter (1) to continue  or  (0) to exit: ");
+			try
+				stdin.getu8();
+				breakif(al == 1 || al == 0);
+			anyexception
+				stdout.put("Please type the correct answer if you want to proceed.", nl);
+			endtry;
+		endfor;
+		
+		breakif(al == 0);
+	endfor;
+	
+	console.cls();
+	stdout.newln();
+	stdout.newln();
+	
+	stdout.put("		   Lowe's Fast Foods - Price is RIGHT!", nl);
+	stdout.put(nl,"			       Chico, CA", nl,nl,nl);
+	stdout.put("		Thank you for shopping. Here's your receipt:", nl,nl);
+	printReceipt("Doritos", doritosSTK, doritosCost);
+	printReceipt("Caramel", caramelSTK, caramelCost);
+	printReceipt("Sunny D", sunnydSTK, sunnydCost);
+	printReceipt("Yogurt", yogurtSTK, yogurtCost);
+	printReceipt("Jerky", jerkySTK, jerkyCost);
+	stdout.put(nl,nl);
+	stdout.put("		Total Credits", nl, "                			                : ", totalCost, nl);
+        stdout.put(nl,nl);
+        stdout.put("                            #",totalItems, " Item(s) Purchased!", nl,nl);
+end SnackShack;

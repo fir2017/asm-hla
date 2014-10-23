@@ -1,0 +1,14 @@
+program M2;
+#include("stdlib.hhf");
+static
+    x       :int8;
+
+begin M2;
+    mov(%1010_1010, x);
+    stdout.put(x, nl);
+
+    not(al);
+    stdout.put("AL [before add]: ", (type int8 al), nl);
+    add(1, al);
+    stdout.put("AL: ", (type int8 al), nl);
+end M2;

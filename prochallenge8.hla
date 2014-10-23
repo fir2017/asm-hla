@@ -1,0 +1,114 @@
+program Pro8;
+#include("stdlib.hhf");
+
+// declare procedures
+procedure getUns8(prompt: string; min: uns8; max: uns8); @returns("al"); @forward;
+procedure getInt8(prompt: string; min: int8; max: int8); @returns("al"); @forward;
+procedure showBits(value: byte); @forward;
+
+
+// define procedures
+procedure getUns8(prompt: string; min: uns8; max: uns8);
+begin getUns8;
+    forever
+        stdout.put(prompt);
+        try
+            stdin.flushInput();
+            stdin.getu8();
+            unprotected
+                breakif(al >= min && al <= max);
+                stdout.put("Try again. Enter a value between ", min, " and ", max, nl); 
+        anyexception
+            stdout.put("Try again. Enter a value between ", min, " and ", max, nl); 
+        endtry;
+    endfor;
+end getUns8;
+
+procedure getInt8(prompt: string; min: int8; max: int8);
+begin getInt8;
+    forever
+        stdout.put(prompt);
+        try
+            stdin.flushInput();
+            stdin.geti8();
+            unprotected
+                breakif(al >= min && al <= max);
+                stdout.put("Try again. Enter a value between ", min, " and ", max, nl); 
+        anyexception
+            stdout.put("Try again. Enter a value between ", min, " and ", max, nl); 
+        endtry;
+    endfor;
+end getInt8;
+
+procedure showBits(value: byte); 
+begin showBits;
+    push(eax);
+    push(ecx);
+
+    mov(value, al);
+    stdout.put("%");
+    for(mov(0, cl); cl<8; inc(cl)) do
+        
+        shl(1, al);
+        if(@c) then
+            if(cl == 4) then
+                stdout.put("_");
+            endif;
+            stdout.put("1");
+        else
+            stdout.put("0");
+        endif;
+
+    endfor;
+
+    pop(ecx);
+    pop(eax);
+end showBits;
+
+begin Pro8;
+    getUns8("Enter a value: ", 1, 255);
+    stdout.put("Your value in decimal: ", (type uns8 al), nl);
+    stdout.put("Your value in binary is: ");
+    showBits(al);
+    stdout.newln();
+    not(al);
+    stdout.put("Your bitwise value [decimal]: ", (type uns8 al), nl);
+    stdout.put("Your bitwise value [binary]: ");
+    showBits(al);
+    stdout.newln();
+
+    console.cls();
+
+    stdout.put("Press ENTER to continue...");
+    stdin.readLn();
+
+    getInt8("Enter a value: ", 1, 127);
+
+    stdout.put("Your value in decimal: ", (type int8 al), nl);
+    stdout.put("Your value in binary is: ");
+    showBits(al);
+    stdout.newln();
+    stdout.put("Bits that are set: ");
+
+    push(eax);
+    push(ecx);
+
+    for(mov(%1000_0000, cl); cl!= 0; shr(1, cl)) do
+        mov(dl, al);
+        and(cl, al);
+        if(al != 0) then
+            stdout.put((type uns8 cl), " ");
+        endif;
+    endfor;
+
+    stdout.newln();
+
+    pop(ecx);
+    pop(eax);
+
+    or(%1111_1111, al);
+    stdout.put("All bits are now set: ");
+    showBits(al);
+    stdout.newln();
+
+end Pro8;

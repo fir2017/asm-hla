@@ -1,0 +1,89 @@
+program ASMPizza;
+#include("stdlib.hhf");
+
+// declare procedures
+procedure showBinary(value: byte); @forward;
+procedure pizzaDecoder(pizzaOptions: byte); @forward;
+procedure displaySetting(optionNumber: uns8); @forward;
+
+procedure showBinary(value: byte);
+begin showBinary;
+    push(eax);
+    push(ecx);
+
+    mov(value, al);
+    stdout.put("%");
+    for(mov(0, cl); cl<8; inc(cl)) do
+        shl(1, al);
+        if(@c) then
+            stdout.put("1");
+        else
+            stdout.put("0");
+        endif;
+    endfor;
+
+    pop(ecx);
+    pop(eax);
+end showBinary;
+
+
+procedure pizzaDecoder(pizzaOptions: byte); 
+begin pizzaDecoder;
+    push(eax);
+    push(ecx);
+
+    for(mov(%1000_0000, cl); cl!= 0; shr(1, cl)) do
+        mov(pizzaOptions, al);
+        and(cl, al);
+        if(al != 0) then
+            displaySetting(cl);
+        endif;
+    endfor;
+
+    pop(ecx);
+    pop(eax);
+end pizzaDecoder;
+
+procedure displaySetting(optionNumber: uns8);
+begin displaySetting;
+    if(optionNumber == 1) then
+        stdout.put("pepperoni ");
+    elseif(optionNumber == 2) then
+        stdout.put("sausage ");
+    elseif(optionNumber == 4) then
+        stdout.put("onions ");
+    elseif(optionNumber == 8) then
+        stdout.put("mushrooms ");
+    elseif(optionNumber == 16) then
+        stdout.put("anchovies ");
+    elseif(optionNumber == 32) then
+        stdout.put("bell peppers ");
+    elseif(optionNumber == 64) then
+        stdout.put("pineapple ");
+    elseif(optionNumber == 128) then
+        stdout.put("large ");
+    else
+        stdout.put("UNKNWON! ");
+    endif;
+end displaySetting;
+
+begin ASMPizza;
+
+    mov(0, al);
+
+    // add pepperoni option
+    or(%0000_0001, al);
+
+    // add mushrooms option
+    or(%0000_1000, al);
+
+    // make it a large
+    or(%1000_0000, al);
+
+    showBinary(al);
+    stdout.newln();
+    pizzaDecoder(al);
+    stdout.newln();
+
+    xor(al, al);
+end ASMPizza;

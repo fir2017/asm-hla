@@ -1,0 +1,47 @@
+program ShowBit;
+#include("stdlib.hhf");
+
+// declare procedures 
+procedure showBits(value: byte); @forward;
+
+// showBits()
+procedure showBits(value: byte);
+begin showBits;
+    push(eax);
+    push(ecx);
+
+    mov(value, al);
+    stdout.put("%");
+    for( mov(0, cl); cl < 8; inc(cl) ) do
+        shl(1, al);
+        if(@c) then
+            stdout.put("1");
+        else
+            stdout.put("0");
+        endif;
+
+        // print underscore after every nibble
+        if(cl == 3) then 
+            stdout.put("_");
+        endif;
+    endfor; 
+
+    pop(ecx);
+    pop(eax);
+end showBits;
+
+begin ShowBit;
+    mov(%1111_0000, al);
+    xor(al, al);
+
+    showBits(al);
+    stdout.newln();
+
+    mov(%0111_1111, al);
+    add(%0000_0001, al);
+    if (@c) then
+        stdout.put("OVERFLOW ");
+    endif;
+     stdout.put(al); 
+     stdout.put((type uns8 al)); 
+end ShowBit;
