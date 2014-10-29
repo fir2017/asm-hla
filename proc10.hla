@@ -1,5 +1,14 @@
 /*
- * COMPLETE THE PROGRAM DOCUMENTATION HERE
+ * Challenge 10 - Convert High to Low-level
+ *
+ *
+ * written by           Low Saetern
+ * created on           27 October 2014
+ * last modified        29 October 2014
+ *
+ * Converted high-level if..elseif...else to low-level statements.
+ * These low-level assembly includes cmp, jl, jne, and labels
+ * Last part, a single character is converted to upper-case
  *
  */
 program ProgrammingChallengeFifteen;
@@ -65,11 +74,16 @@ begin ProgrammingChallengeFifteen;
 	        cmp(al, 1);
                 jne testEven;
 		//if (al == 1) then
-			if (input < 0) then
+                        cmp(input, 0);
+                        jnl greaterThan;
+			//if (input < 0) then
 				stdout.put(input, " is a negative value.", nl);
-			else
+                                jmp endGreaterThan;
+			//else
+                        greaterThan:
 				stdout.put(input, " is greater than or equal to zero.", nl);
-			endif;
+                        endGreaterThan:
+			//endif;
                         jmp tryAgain;
                 testEven:
                 cmp(al, 2);
@@ -79,11 +93,16 @@ begin ProgrammingChallengeFifteen;
 			mov(0, ah);
 			mov(input, al);
 			idiv(2, ax);
-			if (ah == 0) then
+                        cmp(ah, 0);
+                        jne oddNumber;
+			//if (ah == 0) then
 				stdout.put(input, " is an even number.", nl);
-			else
+                                jmp endOddEven;
+			//else
+                        oddNumber:
 				stdout.put(input, " is an odd number.", nl);
-			endif;
+                        endOddEven:
+			//endif;
                         jmp tryAgain;
                 reverseSign:
                 cmp(al, 3);
@@ -108,25 +127,36 @@ begin ProgrammingChallengeFifteen;
 			//endif;
                         checkPrime:
 			mov(true, isPrime);
-			if (input < 2) then
+                        cmp(input, 2);
+                        jnl doubleCheckPrime;
+			//if (input < 2) then
 				mov(false, isPrime);
-			else
+		//	else
+                        doubleCheckPrime:
 				for (mov(2, cl); cl<input; inc(cl)) do
 					mov(0, ah);
 					mov(input, al);
 					div(cl, ax);
-					if (ah == 0) then
+                                        cmp(ah, 0);
+                                        jne tripleCheckPrime;
+					//if (ah == 0) then
 						mov(false, isPrime);
 						break;
-					endif;
+					//endif;
+                                        tripleCheckPrime:
 				endfor;
-			endif;
+			//endif;
 			
-			if (isPrime == true) then
+                        cmp(isPrime, 1);
+                        jne notPrime;
+			//if (isPrime == true) then
 				stdout.put(input, " is a prime number.", nl);
-			else
+                                jmp endPrime;
+			//else
+                        notPrime:
 				stdout.put(input, " is not a prime number.", nl);
-			endif;
+                        endPrime:
+			//endif;
 		//endif;
 		
                 tryAgain:
@@ -135,6 +165,7 @@ begin ProgrammingChallengeFifteen;
 		
 		stdin.getc(); // NEED CODE TO FORCE UPPER-CASE
 		
+                and($5f, al); // FORCES UPPERCASE!
 		cmp(al, 'N');
 		jne GO_AGAIN;
 			break;
