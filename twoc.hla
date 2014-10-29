@@ -1,0 +1,37 @@
+program Complement;
+#include("stdlib.hhf");
+// declare procedures 
+procedure showBits(value: int16); @forward;
+
+// showBits()
+procedure showBits(value: int16);
+begin showBits;
+    push(eax);
+    push(ecx);
+
+    mov(value, ax);
+    stdout.put("%");
+    for( mov(0, cx); cl < 8; inc(cx) ) do
+        shl(1, ax);
+        if(@c) then
+            stdout.put("1");
+        else
+            stdout.put("0");
+        endif;
+
+        // print underscore after every nibble
+        if(cx == 3) then 
+            stdout.put("_");
+        endif;
+    endfor; 
+
+    pop(ecx);
+    pop(eax);
+end showBits;
+
+
+begin Complement;
+
+    mov(%1111_1111, al);
+    stdout.put( (type uns8 al), nl);
+end Complement;

@@ -1,0 +1,12 @@
+program Qtest;
+#include("stdlib.hhf");
+
+
+begin Qtest;
+    mov(1, al);
+    startProgram:
+        stdout.put(al, nl);
+        add(1, al);
+
+    jmp startProgram;
+end Qtest;
