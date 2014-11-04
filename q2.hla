@@ -1,0 +1,7 @@
+program TESTcmp;
+#include("stdlib.hhf");
+static
+    J       :int32;
+begin TESTcmp;
+    add(5,5);
+end TESTcmp;

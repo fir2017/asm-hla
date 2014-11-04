@@ -1,39 +1,132 @@
+/*
+ * Challenge 11 - Memory reference, dereference, pointers
+ *
+ *
+ * author           Low Saetern
+ * created on       30 October 2014
+ * last modified    04 November 2014
+ *
+ *
+ * Challenge 11 prompts for multiple inputs (int 8, 16, 32) and thne
+ * processes it accordingly. After, the program will dispay the memory
+ * address and value for the inputs.
+ *
+ */
+
 program ALPHA;
 #include("stdlib.hhf");
 
 static
     number8         :int8;
-    number16        :int8;
-    number32        :int8;
+    number16        :int16;
+    number32        :int32;
 
-// DECLARE procedure
-procedure getInt8(prompt: string, min: int8, max: int8); @returns("al"); @forward;
-procedure getInt16(prompt: string, min: int16, max: int16); @returns("ax"); @forward;
-procedure getInt32(prompt: string, min: int32, max: int32); @returns("eax"); @forward;
+// DECLARE procedures
+procedure getInt8(prompt: string; min: int8; max: int8); @returns("al"); @forward;
+procedure getInt16(prompt: string; min: int16; max: int16); @returns("ax"); @forward;
+procedure getInt32(prompt: string; min: int32; max: int32); @returns("eax"); @forward;
+procedure displayValue(memAddress: dword; choice: uns8); @forward;
 
-
-procedure getInt8(prompt: string, min: int8, max: int8); 
+// INT8
+procedure getInt8(prompt: string; min: int8; max: int8); 
 begin getInt8;
-    stdout.put(prompt);
-    stdin.flushInput();
-    try
-        stdin.geti8();
-        breakif(al >= min && al <= max);
-    exception(ex.IllegalChar);
-        stdout.put("Please ENTER a valid input.", nl, nl);
-    exception(ex.ValueOutOfRange);
-        stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
-    anyexception
-        stdout.put("Try again.", nl);
-    endtry;
+    forever
+        stdout.put(prompt);
+        stdin.flushInput();
+        try
+            stdin.geti8();
+            breakif(al >= min && al <= max);
+            exception(ex.IllegalChar);
+                stdout.put("Please ENTER a valid input.", nl, nl);
+            exception(ex.ValueOutOfRange);
+                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
+            anyexception
+                stdout.put("Try again.", nl);
+        endtry;
+    endfor;
 end getInt8;
-procedure getInt16(prompt: string, min: int16, max: int16);
+
+// INT16
+procedure getInt16(prompt: string; min: int16; max: int16);
 begin getInt16;
+    forever
+        stdout.put(prompt);
+        stdin.flushInput();
+        try
+            stdin.geti16();
+            breakif(ax >= min && ax <= max);
+            exception(ex.IllegalChar);
+                stdout.put("Please ENTER a valid input.", nl, nl);
+            exception(ex.ValueOutOfRange);
+                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
+            anyexception
+                stdout.put("Try again.", nl);
+        endtry;
+    endfor;
 end getInt16;
-procedure getInt32(prompt: string, min: int32, max: int32); 
+
+// INT32
+procedure getInt32(prompt: string; min: int32; max: int32); 
 begin getInt32;
+    forever
+        stdout.put(prompt);
+        stdin.flushInput();
+        try
+            stdin.geti32();
+            breakif(eax >= min && eax <= max);
+            exception(ex.IllegalChar);
+                stdout.put("Please ENTER a valid input.", nl, nl);
+            exception(ex.ValueOutOfRange);
+                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
+            anyexception
+                stdout.put("Try again.", nl);
+        endtry;
+    endfor;
+
 end getInt32;
 
+// DISPLAY VALUE
+procedure displayValue(memAddress: dword; choice: uns8);
+begin displayValue;
+    cmp(choice, 2);
+    // GOTO INT16 CODE
+    je INT16_ADDR;
+
+    cmp(choice, 3);
+    // GOTO INT32 CODE
+    je INT32_ADDR;
+
+    mov(memAddress, eax);
+    mov([eax], al);
+    stdout.put("address: $", memAddress, " = ");
+    stdout.put((type int8 al), " (int8)", nl);
+    jmp END_DISPLAY;
+    
+    INT16_ADDR:
+    mov(memAddress, eax);
+    mov([eax], ax);
+    stdout.put("address: $", memAddress, " = ");
+    stdout.put((type int16 ax), " (int16)", nl);
+    jmp END_DISPLAY;
+
+    INT32_ADDR:
+    mov(memAddress, eax);
+    mov([eax], eax);
+    stdout.put("address: $", memAddress, " = ");
+    stdout.put((type int32 eax), " (int32)", nl);
+
+    END_DISPLAY:
+end displayValue;
+
 begin ALPHA;
-    getInt('Enter value', 1, 127);
+    getInt8("Enter value: ", 1, 127);
+    mov(al, number8);
+    getInt16("Enter value: ", -32768, 32767);
+    mov(ax, number16);
+    getInt32("Enter value: ", -2147483648, 2147483647);
+    mov(eax, number32);
+    
+    displayValue(&number8, 1);
+    displayValue(&number16, 2);
+    displayValue(&number32, 3);
 end ALPHA;
