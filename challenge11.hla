@@ -28,61 +28,59 @@ procedure getInt32(prompt: string; min: int32; max: int32); @returns("eax"); @fo
 procedure displayValue(memAddress: dword; choice: uns8); @forward;
 
 // INT8
-procedure getInt8(prompt: string; min: int8; max: int8); 
+// INT16
+
+procedure getInt8(prompt:string; min: int8; max: int8);
 begin getInt8;
-    forever
-        stdout.put(prompt);
-        stdin.flushInput();
-        try
-            stdin.geti8();
-            breakif(al >= min && al <= max);
-            exception(ex.IllegalChar);
-                stdout.put("Please ENTER a valid input.", nl, nl);
-            exception(ex.ValueOutOfRange);
-                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
-            anyexception
-                stdout.put("Try again.", nl);
-        endtry;
-    endfor;
+  rep_unti8:
+    stdout.put(prompt);
+    stdin.flushInput();
+    try
+      stdin.geti8();
+      jmp ex_int8;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+      stdout.put("Please ENTER a valid input between ");
+      stdout.put(min, " and ", max, nl, nl);
+    endtry;
+    jmp rep_unti8;
+  ex_int8:
 end getInt8;
 
-// INT16
-procedure getInt16(prompt: string; min: int16; max: int16);
+procedure getInt16(prompt:string; min: int16; max: int16);
 begin getInt16;
-    forever
-        stdout.put(prompt);
-        stdin.flushInput();
-        try
-            stdin.geti16();
-            breakif(ax >= min && ax <= max);
-            exception(ex.IllegalChar);
-                stdout.put("Please ENTER a valid input.", nl, nl);
-            exception(ex.ValueOutOfRange);
-                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
-            anyexception
-                stdout.put("Try again.", nl);
-        endtry;
-    endfor;
+  rep_unti16:
+    stdout.put(prompt);
+    stdin.flushInput();
+    try
+      stdin.geti16();
+      jmp ex_int16;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+      stdout.put("Please ENTER a valid input between ");
+      stdout.put(min, " and ", max, nl, nl);
+    endtry;
+    jmp rep_unti16;
+  ex_int16:
 end getInt16;
 
-// INT32
-procedure getInt32(prompt: string; min: int32; max: int32); 
-begin getInt32;
-    forever
-        stdout.put(prompt);
-        stdin.flushInput();
-        try
-            stdin.geti32();
-            breakif(eax >= min && eax <= max);
-            exception(ex.IllegalChar);
-                stdout.put("Please ENTER a valid input.", nl, nl);
-            exception(ex.ValueOutOfRange);
-                stdout.put("Please ENTER a value between ", min, " and ", max, nl, nl);
-            anyexception
-                stdout.put("Try again.", nl);
-        endtry;
-    endfor;
 
+// INT32
+procedure getInt32(prompt:string; min: int32; max: int32);
+begin getInt32;
+  rep_unti32:
+    stdout.put(prompt);
+    stdin.flushInput();
+    try
+      stdin.geti32();
+      jmp ex_int32;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+      stdout.put("Please ENTER a valid input between ");
+      stdout.put(min, " and ", max, nl, nl);
+    endtry;
+    jmp rep_unti32;
+  ex_int32:
 end getInt32;
 
 // DISPLAY VALUE
@@ -119,7 +117,8 @@ begin displayValue;
 end displayValue;
 
 begin ALPHA;
-    getInt8("Enter value: ", 1, 127);
+    rep_unt:
+    getInt8("Enter value: ", -128, 127);
     mov(al, number8);
     getInt16("Enter value: ", -32768, 32767);
     mov(ax, number16);
@@ -129,4 +128,16 @@ begin ALPHA;
     displayValue(&number8, 1);
     displayValue(&number16, 2);
     displayValue(&number32, 3);
+    stdout.put("Do you want to start again?(y, n) ",nl)
+    rep_getc:
+      stdin.getc();
+    cmp(al, 'y');
+    jne no_comp;
+    jmp ex_rep_c;
+    no_comp:
+      cmp(al, 'n');
+      jne rep_getc;
+    ex_rep_c:
+    cmp(al,'y');
+    je rep_unt;
 end ALPHA;
