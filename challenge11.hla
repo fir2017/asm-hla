@@ -28,8 +28,6 @@ procedure getInt32(prompt: string; min: int32; max: int32); @returns("eax"); @fo
 procedure displayValue(memAddress: dword; choice: uns8); @forward;
 
 // INT8
-// INT16
-
 procedure getInt8(prompt:string; min: int8; max: int8);
 begin getInt8;
   rep_unti8:
@@ -47,6 +45,7 @@ begin getInt8;
   ex_int8:
 end getInt8;
 
+// INT16
 procedure getInt16(prompt:string; min: int16; max: int16);
 begin getInt16;
   rep_unti16:
@@ -117,27 +116,24 @@ begin displayValue;
 end displayValue;
 
 begin ALPHA;
-    rep_unt:
-    getInt8("Enter value: ", -128, 127);
-    mov(al, number8);
-    getInt16("Enter value: ", -32768, 32767);
-    mov(ax, number16);
-    getInt32("Enter value: ", -2147483648, 2147483647);
-    mov(eax, number32);
-    
-    displayValue(&number8, 1);
-    displayValue(&number16, 2);
-    displayValue(&number32, 3);
-    stdout.put("Do you want to start again?(y, n) ",nl)
-    rep_getc:
-      stdin.getc();
-    cmp(al, 'y');
-    jne no_comp;
-    jmp ex_rep_c;
-    no_comp:
-      cmp(al, 'n');
-      jne rep_getc;
-    ex_rep_c:
-    cmp(al,'y');
-    je rep_unt;
+    REP_UNT:
+        getInt8("Enter value: ", -128, 127);
+        mov(al, number8);
+        getInt16("Enter value: ", -32768, 32767);
+        mov(ax, number16);
+        getInt32("Enter value: ", -2147483648, 2147483647);
+        mov(eax, number32);
+        
+        displayValue(&number8, 1);
+        displayValue(&number16, 2);
+        displayValue(&number32, 3);
+        stdout.put("Do you want to start again? (y/n): ");
+
+        REP_GETC:
+            stdin.flushInput();
+            stdin.getc();
+            and($5f, al);
+        
+        cmp(al, 'Y');
+        je REP_UNT;
 end ALPHA;
