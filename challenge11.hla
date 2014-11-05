@@ -30,56 +30,56 @@ procedure displayValue(memAddress: dword; choice: uns8); @forward;
 // INT8
 procedure getInt8(prompt:string; min: int8; max: int8);
 begin getInt8;
-  rep_unti8:
+  REP_UNTI8:
     stdout.put(prompt);
     stdin.flushInput();
     try
       stdin.geti8();
-      jmp ex_int8;
+      jmp EX_INT8;
     anyexception
       stdout.put("The value is invalid.",nl);
       stdout.put("Please ENTER a valid input between ");
       stdout.put(min, " and ", max, nl, nl);
     endtry;
-    jmp rep_unti8;
-  ex_int8:
+    jmp REP_UNTI8;
+  EX_INT8:
 end getInt8;
 
 // INT16
 procedure getInt16(prompt:string; min: int16; max: int16);
 begin getInt16;
-  rep_unti16:
+  REP_UNTI16:
     stdout.put(prompt);
     stdin.flushInput();
     try
       stdin.geti16();
-      jmp ex_int16;
+      jmp EX_INT16;
     anyexception
       stdout.put("The value is invalid.",nl);
       stdout.put("Please ENTER a valid input between ");
       stdout.put(min, " and ", max, nl, nl);
     endtry;
-    jmp rep_unti16;
-  ex_int16:
+    jmp REP_UNTI16;
+  EX_INT16:
 end getInt16;
 
 
 // INT32
 procedure getInt32(prompt:string; min: int32; max: int32);
 begin getInt32;
-  rep_unti32:
+  REP_UNTI32:
     stdout.put(prompt);
     stdin.flushInput();
     try
       stdin.geti32();
-      jmp ex_int32;
+      jmp EX_INT32;
     anyexception
       stdout.put("The value is invalid.",nl);
       stdout.put("Please ENTER a valid input between ");
       stdout.put(min, " and ", max, nl, nl);
     endtry;
-    jmp rep_unti32;
-  ex_int32:
+    jmp REP_UNTI32;
+  EX_INT32:
 end getInt32;
 
 // DISPLAY VALUE
