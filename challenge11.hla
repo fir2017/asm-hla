@@ -25,7 +25,7 @@ static
 procedure getInt8(prompt: string; min: int8; max: int8); @returns("al"); @forward;
 procedure getInt16(prompt: string; min: int16; max: int16); @returns("ax"); @forward;
 procedure getInt32(prompt: string; min: int32; max: int32); @returns("eax"); @forward;
-procedure displayValue(memAddress: dword; choice: uns8); @forward;
+procedure displayValue(addr: dword; choice: uns8); @forward;
 
 // INT8
 procedure getInt8(prompt:string; min: int8; max: int8);
@@ -83,7 +83,7 @@ begin getInt32;
 end getInt32;
 
 // DISPLAY VALUE
-procedure displayValue(memAddress: dword; choice: uns8);
+procedure displayValue(addr: dword; choice: uns8);
 begin displayValue;
     cmp(choice, 2);
     // GOTO INT16 CODE
@@ -93,23 +93,23 @@ begin displayValue;
     // GOTO INT32 CODE
     je INT32_ADDR;
 
-    mov(memAddress, eax);
+    mov(addr, eax);
     mov([eax], al);
-    stdout.put("address: $", memAddress, " = ");
+    stdout.put("address: $", addr, " = ");
     stdout.put((type int8 al), " (int8)", nl);
     jmp END_DISPLAY;
     
     INT16_ADDR:
-    mov(memAddress, eax);
+    mov(addr, eax);
     mov([eax], ax);
-    stdout.put("address: $", memAddress, " = ");
+    stdout.put("address: $", addr, " = ");
     stdout.put((type int16 ax), " (int16)", nl);
     jmp END_DISPLAY;
 
     INT32_ADDR:
-    mov(memAddress, eax);
+    mov(addr, eax);
     mov([eax], eax);
-    stdout.put("address: $", memAddress, " = ");
+    stdout.put("address: $", addr, " = ");
     stdout.put((type int32 eax), " (int32)", nl);
 
     END_DISPLAY:

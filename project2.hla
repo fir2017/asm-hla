@@ -10,3 +10,59 @@
  * Project 2 helps solve world hunder issues.
  *
  */
+
+program PROJECT2;
+#include("stdlib.hhf");
+
+// DECLARE PROCEDURES
+procedure createTable(prompt: string; min: uns8; max: uns8); @returns("al"); @forward;
+procedure setDataType(prompt: string; min: uns8; max: uns8); @forward;
+
+
+procedure createTable(prompt: string; min: uns8; max: uns8); 
+begin createTable;
+    CREATE_TABLE_LOOP:
+        stdout.put(prompt);
+        try
+            stdin.flushInput();
+            stdin.getu8();
+            jmp EX_CREATE_TABLE;
+            anyexception
+                stdout.put("Value not in required range.", nl);
+                jmp CREATE_TABLE_LOOP;
+        endtry;
+
+    EX_CREATE_TABLE:
+end createTable;
+
+// SET DATA TYPE
+procedure setDataType(prompt: string; min: uns8; max: uns8);
+begin setDataType;
+    DATA_TYPE_LOOP:
+        try
+            stdout.put(prompt);
+            stdout.newln();
+            stdout.put("[1] int8", nl, "[2] int16", nl, "[3] int32", nl, nl);
+            stdout.put("Your choice (1-3): ");
+
+            stdin.flushInput();
+            stdin.getu8();
+            cmp(al, min);
+            // COMPARE MIN AND MAX THEN ADD RELAVENT JMPS 
+            //jg EX_DATA_TYPE;
+            anyexception
+                stdout.put("Value not in required range.", nl);
+                jmp DATA_TYPE_LOOP;
+        endtry;
+
+    EX_DATA_TYPE:
+end setDataType;
+
+begin PROJECT2;
+    createTable("Enter number of cells desired (2-10): ", 2, 10);
+    setDataType("Select desired data type...", 1, 3);
+    mov(5, eax);
+    stdout.put(eax, nl);
+    mov([eax], ebx);
+    stdout.put(ebx, nl);
+end PROJECT2;
