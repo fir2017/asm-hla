@@ -127,9 +127,9 @@ begin ALPHA;
         displayValue(&number8, 1);
         displayValue(&number16, 2);
         displayValue(&number32, 3);
-        stdout.put("Do you want to start again? (y/n): ");
 
         REP_GETC:
+            stdout.put("Do you want to start again? (y/n): ");
             stdin.flushInput();
             stdin.getc();
             and($5f, al);
