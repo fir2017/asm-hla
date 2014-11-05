@@ -136,4 +136,6 @@ begin ALPHA;
         
         cmp(al, 'Y');
         je REP_UNT;
+        cmp(al, 'N');
+        jne REP_GETC;
 end ALPHA;
