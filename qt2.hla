@@ -1,0 +1,18 @@
+program qt2;
+#include("stdlib.hhf");
+static
+    num8        :int8;
+
+
+begin qt2;
+mov(10, bl);
+mov(bl, al);
+mov(al, num8);
+
+stdout.put("al: ", (type int8 al), nl);
+stdout.put("num8: ", num8, nl);
+
+
+stdout.put("al [addr]: ", al, nl);
+stdout.put("num8 [addr]: $", &num8, nl);
+end qt2;

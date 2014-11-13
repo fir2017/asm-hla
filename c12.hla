@@ -1,0 +1,113 @@
+program CH12;
+#include("stdlib.hhf");
+
+static
+    int8_items          :byte;
+    int16_items         :word;
+    int32_items         :dword;
+    base_address        :dword;
+
+procedure displayItems(addr: dword; choice: uns8);
+begin displayItems;
+    push(eax);
+
+    mov(addr, eax);
+
+    cmp(choice, 2);
+    je CALC_INT16;
+    cmp(choice, 3);
+    je CALC_INT32;
+
+    // CALC_INT8
+        stdout.put((type int8 [eax]), nl);
+        stdout.put((type int8 [eax+1]), nl);
+        jmp EX_DISPLAY;
+    
+    CALC_INT16:
+        stdout.put((type int16 [eax]), nl);
+        stdout.put((type int16 [eax+1*2]), nl);
+        stdout.put((type int16 [eax+2*2]), nl);
+        stdout.put((type int16 [eax+3*2]), nl);
+        jmp EX_DISPLAY;
+
+    CALC_INT32:
+        stdout.put((type int32 [eax]), nl);
+        stdout.put((type int32 [eax+1*4]), nl);
+        stdout.put((type int32 [eax+2*4]), nl);
+        stdout.put((type int32 [eax+3*4]), nl);
+        stdout.put((type int32 [eax+4*4]), nl);
+        stdout.put((type int32 [eax+5*4]), nl);
+
+
+    EX_DISPLAY:
+    pop(eax);
+end displayItems;
+
+procedure findMaxValue(num_cells:uns32);
+  static greater_value:uns32;
+begin findMaxValue;
+  pushad();
+  mov(base_adress, eax);
+  mov(eax, greater_value);
+  mov(0, ebx);
+  REP_UNTIL_MAX:
+    mov(num_cells, ecx);
+    cmp(ebx, ecx);
+    je EX_CALC_MAX;
+    inc(ebx);
+    add(1,eax);
+    mov(greater_value, edx);
+    mov([edx], ecx);
+    jg CH_GREATER_VAL;
+    jmp REP_UNTIL_MAX;
+  CH_GREATER_VAL;
+    mov(eax, greater_value);
+    jmp REP_UNTIL_MAX;
+
+  EX_CALC_MAX:
+    
+    mov(greater_value, ecx);
+    stdout.put((type int8 cl));
+  popad();
+end findMaxValue;
+
+begin findMaxValue;
+
+end findMaxValue;
+
+begin CH12;
+
+    // INT8
+    mem.alloc(3);
+    mov(42, (type int8 [eax])); // indirect
+    mov(99, (type int8 [eax+1])); // indexed
+    // mov(1234, (type int16 [eax+4*2])); // scaled indexed
+    displayItems(eax, 1);
+    // CALCULATE MAX VALUE
+    stdout.newln();
+    mem.free(eax);
+
+    // INT16
+    mem.alloc(10);
+    mov(25, (type int16 [eax]));
+    mov(200, (type int16 [eax+1*2]));
+    mov(73, (type int16 [eax+2*2]));
+    mov(331, (type int16 [eax+3*2]));
+    displayItems(eax, 2);
+    // CALCULATE MAX VALUE
+    stdout.newln();
+    mem.free(eax);
+
+    // INT32
+    mem.alloc(28);
+    mov(432, (type int32 [eax]));
+    mov(3332, (type int32 [eax+1*4]));
+    mov(1132, (type int32 [eax+2*4]));
+    mov(9932, (type int32 [eax+3*4]));
+    mov(32, (type int32 [eax+4*4]));
+    mov(732, (type int32 [eax+5*4]));
+    displayItems(eax, 3);
+    // CALCULATE MAX VALUE
+    stdout.newln();
+    mem.free(eax);
+end CH12;

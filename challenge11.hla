@@ -95,21 +95,21 @@ begin displayValue;
 
     mov(addr, eax);
     mov([eax], al);
-    stdout.put("address: $", addr, " = ");
+    stdout.put("Address: $", addr, " = ");
     stdout.put((type int8 al), " (int8)", nl);
     jmp END_DISPLAY;
     
     INT16_ADDR:
     mov(addr, eax);
     mov([eax], ax);
-    stdout.put("address: $", addr, " = ");
+    stdout.put("Address: $", addr, " = ");
     stdout.put((type int16 ax), " (int16)", nl);
     jmp END_DISPLAY;
 
     INT32_ADDR:
     mov(addr, eax);
     mov([eax], eax);
-    stdout.put("address: $", addr, " = ");
+    stdout.put("Address: $", addr, " = ");
     stdout.put((type int32 eax), " (int32)", nl);
 
     END_DISPLAY:

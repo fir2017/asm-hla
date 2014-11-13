@@ -1,0 +1,138 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>a reward</title>
+</head>
+<body>
+
+<div id="dic_bubble" class="selection_bubble fontSize13 noSelect" style="z-index:9999; border: 1px solid #4AAEDE;fetching=false"></div><pre>procedure computeMinimum (baseAddress: dword; cells: uns32; dtype: uns32; dtypeOffset: uns32);
+begin computeMinimum;
+
+	if (dtype == 1) then
+		mov(cells, eax);
+		mul(dtypeOffset, eax);
+		mov(eax, edx);
+		mov((type int8 [ebx]), al);
+		mov(al, (type int8 [ebx+edx]));
+		for (mov(1, ecx); ecx&lt;cells; inc(ecx)) do
+			mov(ecx, eax);
+			push(edx);
+			mul(dtypeOffset, eax);
+			pop(edx);
+			mov((type int8 [ebx+eax]), al);
+			if ((type int8 al) &lt; (type int8 [ebx+edx])) then
+				mov(al, (type int8 [ebx+edx]));
+			endif;
+		endfor;
+	elseif (dtype == 2) then
+		mov(cells, eax);
+		mul(dtypeOffset, eax);
+		mov(eax, edx);
+		mov((type int16 [ebx]), ax);
+		mov(ax, (type int16 [ebx+edx]));
+		for (mov(1, ecx); ecx&lt;cells; inc(ecx)) do
+			mov(ecx, eax);
+			push(edx);
+			mul(dtypeOffset, eax);
+			pop(edx);
+			mov((type int16 [ebx+eax]), ax);
+			if ((type int16 ax) &lt; (type int16 [ebx+edx])) then
+				mov(ax, (type int16 [ebx+edx]));
+			endif;
+		endfor;
+	elseif (dtype == 3) then
+		mov(cells, eax);
+		mul(dtypeOffset, eax);
+		mov(eax, edx);
+		mov((type int32 [ebx]), eax);
+		mov(eax, (type int32 [ebx+edx]));
+		for (mov(1, ecx); ecx&lt;cells; inc(ecx)) do
+			mov(ecx, eax);
+			push(edx);
+			mul(dtypeOffset, eax);
+			pop(edx);
+			mov((type int32 [ebx+eax]), eax);
+			if ((type int32 eax) &lt; (type int32 [ebx+edx])) then
+				mov(eax, (type int32 [ebx+edx]));
+			endif;
+		endfor;
+	endif;
+
+end computeMinimum;
+
+procedure displayCell (address: dword; dtype: uns32; dtypeOffset: uns32; pres: uns8);
+begin displayCell;
+
+	pushad();
+	
+	mov(address, eax);
+	
+	if (pres == 1) then
+		// decimal
+		mov(address, eax);
+		if (dtype == 1) then
+			stdout.puti8Size((type int8 [eax]), -4, ' ');
+		elseif (dtype == 2) then
+			stdout.puti16Size((type int16 [eax]), -6, ' ');
+		elseif (dtype == 3) then
+			stdout.puti32Size((type int32 [eax]), -11, ' ');
+		endif;
+	elseif (pres == 2) then
+		// binary
+		mov(0, edx);
+		mov(address, ebx);
+		if (dtypeOffset == 1) then
+			mov((type byte [ebx]), dl);
+			rol(24, edx);
+			mov(8, eax);
+		elseif (dtypeOffset == 2) then
+			mov((type word [ebx]), dx);
+			rol(16, edx);
+			mov(16, eax);
+		elseif (dtypeOffset == 4) then
+			mov((type dword [ebx]), edx);
+			mov(32, eax);
+		endif;
+		
+		mov(edx, ebx);
+		stdout.put("%");
+		for (mov(1, ecx); ecx &lt;= eax; inc(ecx)) do
+			shl(1, ebx);
+			if (@c) then
+				stdout.put("1");
+			else
+				stdout.put("0");
+			endif;
+
+			if (ecx &lt; eax) then
+				push(eax);
+				mov(ecx, eax);
+				mov(0, edx);
+				div(4, edx:eax);
+				if (edx == 0) then
+					stdout.put("_");
+				endif;
+				pop(eax);
+			endif;
+
+		endfor;
+	elseif (pres == 3) then
+		// hexadecimal
+		mov(address, ebx);
+		stdout.put("$");
+		if (dtypeOffset == 1) then
+			stdout.putb((type byte [ebx]));
+		elseif (dtypeOffset == 2) then
+			stdout.putw((type word [ebx]));
+		elseif (dtypeOffset == 4) then
+			stdout.putd((type dword [ebx]));
+		endif;
+	endif;
+	popad();
+
+end displayCell;
+</pre>
+
+
+
+
+<button id="clearanswers" style="position:fixed;bottom:0;right:0;padding:5px;margin:0 10px 10px 0;z-index:99999">Clear Saved Answers</button></body></html>

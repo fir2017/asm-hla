@@ -4,7 +4,7 @@
  *
  * author           Low Saetern
  * created on       22 October 2014
- * last modified    22 October 2014
+ * last modified    12 November 2014
  *
  *
  * Project 2 helps solve world hunder issues.
@@ -14,55 +14,79 @@
 program PROJECT2;
 #include("stdlib.hhf");
 
-// DECLARE PROCEDURES
-procedure createTable(prompt: string; min: uns8; max: uns8); @returns("al"); @forward;
-procedure setDataType(prompt: string; min: uns8; max: uns8); @forward;
 
+procedure getAnswer(prompt: string; min: int32; max: int32); @returns("eax");
+begin getAnswer;
+    pushad();
 
-procedure createTable(prompt: string; min: uns8; max: uns8); 
-begin createTable;
-    CREATE_TABLE_LOOP:
+    LOOP_ANSWER:
         stdout.put(prompt);
+        stdin.flushInput();
         try
-            stdin.flushInput();
-            stdin.getu8();
-            jmp EX_CREATE_TABLE;
-            anyexception
-                stdout.put("Value not in required range.", nl);
-                jmp CREATE_TABLE_LOOP;
+            stdin.geti32();
+            cmp(eax, min);
+            jl BELOW_VALUE;
+            cmp(eax, max);
+            jg ABOVE_VALUE;
+            // if input valid, exit
+            jmp EX_LOOP;
+        anyexception
+            stdout.put("Invalid input. Try again.", nl);
         endtry;
 
-    EX_CREATE_TABLE:
-end createTable;
+        jmp LOOP_ANSWER;
 
-// SET DATA TYPE
-procedure setDataType(prompt: string; min: uns8; max: uns8);
-begin setDataType;
-    DATA_TYPE_LOOP:
-        try
-            stdout.put(prompt);
-            stdout.newln();
-            stdout.put("[1] int8", nl, "[2] int16", nl, "[3] int32", nl, nl);
-            stdout.put("Your choice (1-3): ");
+        BELOW_VALUE:
+        ABOVE_VALUE:
+            stdout.put("Enter a correct value between ", min, " and ", max, ".", nl);
+            jmp LOOP_ANSWER;
 
-            stdin.flushInput();
-            stdin.getu8();
-            cmp(al, min);
-            // COMPARE MIN AND MAX THEN ADD RELAVENT JMPS 
-            //jg EX_DATA_TYPE;
-            anyexception
-                stdout.put("Value not in required range.", nl);
-                jmp DATA_TYPE_LOOP;
-        endtry;
+    EX_LOOP:
+        mov(eax, ebx);
+    popad();
+end getAnswer;
 
-    EX_DATA_TYPE:
-end setDataType;
+procedure allocateData(cell_qty: dword; dtype: dword);
+begin allocateData;
+    pushad();
+
+    // add 1 to store calculation
+    add(1, cell_qty);
+    cmp(dtype, 2);
+    je ALLOC_INT16;
+    cmp(dtype, 3);
+    je ALLOC_INT32;
+    
+    // ALLOC_INT8:
+        mem.alloc( (type int32 cell_qty) );
+        stdout.put(nl, (type uns32 cell_qty), " bytes have been allocated", nl, nl);
+        jmp EX_ALLOC;
+
+    ALLOC_INT16:
+        mov((type int32 cell_qty), eax);
+        imul(2, eax); 
+        mem.alloc(eax);
+        stdout.put(nl, (type int32 eax), " bytes have been allocated", nl, nl);
+        jmp EX_ALLOC;
+
+    ALLOC_INT32:
+        
+    EX_ALLOC:
+    
+    popad();
+end allocateData;
+
 
 begin PROJECT2;
-    createTable("Enter number of cells desired (2-10): ", 2, 10);
-    setDataType("Select desired data type...", 1, 3);
-    mov(5, eax);
-    stdout.put(eax, nl);
-    mov([eax], ebx);
-    stdout.put(ebx, nl);
+    // SPECIFY NUMBER OF CELLS
+    getAnswer("Enter number of cells desired (2-10): ", 2, 10);
+    mov(eax, ebx);
+    
+    // SPECIFY TYPE OF CELLS
+    stdout.put("Select desired data type", nl);
+    stdout.put("[1] int8", nl, "[2] int16", nl, "[3] int32", nl, nl);
+    getAnswer("Your choice (1-3): ", 1, 3);
+
+    // ALLOCATE DATA
+    allocateData(edx, ebx);
 end PROJECT2;
