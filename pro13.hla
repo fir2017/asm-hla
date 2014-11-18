@@ -1,0 +1,65 @@
+/*
+ * Challenge 13
+ *
+ *
+ * author           Low Saetern
+ * created          16 November 2014
+ * modified         16 November 2014
+ *
+ *
+ * Working with index and scales
+ * involving arrays and procedures.
+ *
+ */
+
+program PRO13;
+#include("stdlib.hhf");
+
+static
+    myint8s     :int8[10]   := [0,0,0,0,0,0,0,0,0,0];
+    myint16s    :int16[10]  := [0,0,0,0,0,0,0,0,0,0];
+    myint32s    :int32[10]  := [0,0,0,0,0,0,0,0,0,0];
+
+procedure displayCells(base_addr: dword; array_size: uns32; data_type: uns8);
+begin displayCells;
+    pushad();
+
+    if(data_type == 1) then
+        mov(array_size, ebx); 
+    elseif(data_type == 2) then
+        mov(array_size, ebx);
+        mov(2, eax);
+        mul(ebx, eax);
+        mov(eax, ebx);
+    else
+        mov(array_size, ebx);
+        mov(4, eax);
+        mul(ebx, eax);
+        mov(eax, ebx);
+    endif;
+
+    for( mov(0, ecx); ecx < ebx; inc(ecx) ) do
+        stdout.put(base_addr[ecx], nl);
+    endfor;
+
+    popad();
+end displayCells;
+
+
+begin PRO13;
+
+    displayCells(&myint8s, 10, 1);
+
+    // populate each array with random values using for loop; look into: rand.urange
+    //for( mov(0, ecx); ecx < ebx; inc(ebx) ) do
+    //
+    //endfor;
+
+    //displayCells();
+
+    //resetCells();
+
+    //displayCells();
+
+    // repeat?
+end PRO13;

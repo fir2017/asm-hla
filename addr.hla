@@ -1,0 +1,43 @@
+program AddrTest;
+#include("stdlib.hhf");
+
+static
+    array_address       :dword;
+    array_size          :uns8;
+    data_type           :uns8;
+
+begin AddrTest;
+
+    stdout.put("How many cells (2-10)? ");
+    stdin.getu8();
+    mov(al, array_size);
+
+    stdout.put("What data type (1=8bit, 2=16bit, 3=32bit)? ");
+    stdin.getu8();
+    mov(al, data_type);
+    
+    if (data_type == 1) then
+        mov(array_size, bl);
+    elseif (data_type == 2) then
+        mov(array_size, al);
+        mov(2, bl);
+        mul(bl, al);
+        mov(al, bl);
+    else
+        mov(array_size, al);
+        mov(4, bl);
+        mul(bl, al);
+        mov(al, bl);
+    endif;
+
+    stdout.put("Allocating ", (type uns8 bl), " bytes", nl);
+    mem.zalloc( ebx );
+    mov(al, array_address);
+
+    for(mov(0, ecx); ecx < array_size; inc(ecx)) do
+        stdout.put((type uns32 ecx), ": ", nl);
+        [array_address+ecx*array_size]
+    endfor;
+
+    mem.free(array_address);
+end AddrTest;

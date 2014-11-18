@@ -1,0 +1,142 @@
+/* STARTER CODE FOR BOOK LEARNING CHALLENGE #11 */
+program BookChallengeEleven;
+
+#include ("stdlib.hhf")
+
+procedure printArrayData(baseAddress: dword; arraySize: uns32; dataType: uns8); @forward;
+procedure enterUserValueIntoArray(baseAddress: dword; arraySize: uns32; dataType: uns8); @forward;
+
+procedure printArrayData(baseAddress: dword; arraySize: uns32; dataType: uns8);
+begin printArrayData;
+
+	pushad();
+	
+	mov(baseAddress, ebx);
+	for (mov(0, ecx); ecx < arraySize; inc(ecx)) do
+		if (dataType == 0) then // uns8
+			stdout.put((type uns8 [ebx + ecx]));
+		elseif (dataType == 1) then // uns16
+			stdout.put((type uns16 [ebx + ecx * 2]));
+		elseif (dataType == 2) then // uns32
+			stdout.put((type uns32 [ebx + ecx * 4]));
+		elseif (dataType == 3) then // int8
+			stdout.put((type int8 [ebx + ecx]));
+		elseif (dataType == 4) then // int16
+			stdout.put((type int16 [ebx + ecx * 2]));
+		elseif (dataType == 5) then // int32
+			stdout.put((type int32 [ebx + ecx * 4]));
+			
+		endif;
+		stdout.put(" ");
+	endfor;
+	
+	popad();
+
+end printArrayData;
+
+procedure enterUserValueIntoArray(baseAddress: dword; arraySize: uns32; dataType: uns8);
+begin enterUserValueIntoArray;
+
+	pushad();
+	
+	stdout.put("Enter index of item in array to input (0-", arraySize, "): ");
+	mov(stdin.getu32(), ecx);
+	
+	mov(baseAddress, ebx);
+	
+	forever
+		try
+			push(ebx);
+			push(ecx);
+			stdout.put("Enter a new value: ");
+			if (dataType == 0) then // uns8
+				stdin.getu8();
+				mov(a1, [ebx + ecx]);
+			elseif (dataType == 1) then // uns16
+				stdin.getu16();
+				mov(ax, [ebx + ecx * 2]);
+			elseif (dataType == 2) then // uns32
+                        	stdin.getu32();
+				mov(eax, [ebx + ecx * 4]);
+			elseif (dataType == 3) then // int8
+				stdin.geti8();
+				mov(al, [ebx + ecx]);
+			elseif (dataType == 4) then // int16
+				stdin.geti16();
+				mov(ax, [ebx + ecx * 2]);
+			elseif (dataType == 5) then // int32
+				stdin.geti32();
+				mov(eax, [ebx + ecx * 4]);
+
+			endif;
+			unprotected
+				break;
+		anyexception
+			stdout.put("Invalid entry.", nl, nl);
+		endtry;
+		pop(ecx);
+		pop(ebx);
+	endfor;
+	
+	popad();
+
+end enterUserValueIntoArray;
+
+static
+	mybools:		boolean[5]	:= [false, true, false, true, false];
+	myint16s:	int16[5]		:= [-1000, -100, 0, 100, 1000];
+	myuns32s:	uns32[5]		:= [0, 100, 1000, 10000, 100000];
+
+	numitems:	uns32 := 5;
+
+begin BookChallengeEleven;
+
+	// print all bools in mybools
+	for (mov(0, ecx); ecx < numitems; inc(ecx)) do
+		stdout.putu32Size(ecx, 2, ' ');
+		stdout.put(": ", mybools[ecx], nl);
+	endfor;
+	stdout.newln();
+	
+	// print contents of myint16s
+	printArrayData(&myint16s, numitems, 4);
+	stdout.put(nl, nl);
+	
+	// edit myint16s a couple of times
+	stdout.put("Editing int16 array. Be careful on inputs -- not robust.", nl, nl);
+	enterUserValueIntoArray(&myint16s, numitems, 4);
+	
+	// CODEFILL #7
+	// call enterUserValueIntoArray on myint16s a 2nd time
+        enterUserValueIntoArray(&myint16s, numitems, 2);
+        enterUserValueIntoArray(&myint16s, numitems, 2);
+	
+	// print contents of myint16s
+	
+	// CODEFILL #8
+	// call printArrayData for myint16s
+        printArrayData(&myint16s, numitems, 5);
+	
+	stdout.put(nl, nl);
+	
+	// print myuns32s
+	
+	// CODEFILL #9
+	// call printArrayData for myuns32s
+        printArrayData(&myuns32s, numitems, 2);
+	
+	stdout.put(nl, nl);
+	
+	// edit myuns32s a couple of times
+	stdout.put("Editing uns32 array. Be careful on inputs -- not robust.", nl, nl);
+	
+	// CODEFILL #10
+	// call enterUserValueIntoArray myuns32s two times
+        enterUserValueIntoArray(&myuns32s, numitems, 2);
+        enterUserValueIntoArray(&myuns32s, numitems, 2);
+	
+	// print myuns32s
+	printArrayData(&myuns32s, numitems, 2);
+	stdout.put(nl, nl);
+
+end BookChallengeEleven;
