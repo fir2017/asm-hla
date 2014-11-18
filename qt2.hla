@@ -1,10 +1,16 @@
 program qt2;
 #include("stdlib.hhf");
 static
-    num8        :int8;
+    num8        :int8[5]   := [1,2,3,4,5];
 
 
 begin qt2;
-    stdin.geti8();
-    stdout.puti8Size(al, 5, 10);
+   stdout.put(num8, nl); 
+   stdout.put(num8[1], nl); 
+   stdout.newln();
+
+   stdout.put(&num8, nl);
+   mov(&num8, eax);
+   mov(1, ebx);
+   stdout.put((type int8 [eax + ebx]), nl);
 end qt2;

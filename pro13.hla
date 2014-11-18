@@ -16,30 +16,26 @@ program PRO13;
 #include("stdlib.hhf");
 
 static
-    myint8s     :int8[10]   := [0,0,0,0,0,0,0,0,0,0];
+    myint8s     :int8[10]   := [0,0,0,0,5,0,0,0,0,0];
     myint16s    :int16[10]  := [0,0,0,0,0,0,0,0,0,0];
     myint32s    :int32[10]  := [0,0,0,0,0,0,0,0,0,0];
 
 procedure displayCells(base_addr: dword; array_size: uns32; data_type: uns8);
 begin displayCells;
     pushad();
-
-    if(data_type == 1) then
-        mov(array_size, ebx); 
-    elseif(data_type == 2) then
-        mov(array_size, ebx);
-        mov(2, eax);
-        mul(ebx, eax);
-        mov(eax, ebx);
-    else
-        mov(array_size, ebx);
-        mov(4, eax);
-        mul(ebx, eax);
-        mov(eax, ebx);
-    endif;
-
-    for( mov(0, ecx); ecx < ebx; inc(ecx) ) do
-        stdout.put(base_addr[ecx], nl);
+    
+    mov(base_addr, eax);
+    for( mov(0, ecx); ecx < array_size; inc(ecx) ) do
+        if(data_type == 1) then
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int8 [eax + ecx]), nl );
+        elseif(data_type == 2) then
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int16 [eax + ecx * 2]), nl );
+        else
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int32 [eax + ecx * 4]), nl );
+         endif;  
     endfor;
 
     popad();
@@ -49,6 +45,8 @@ end displayCells;
 begin PRO13;
 
     displayCells(&myint8s, 10, 1);
+    displayCells(&myint16s, 10, 2);
+    displayCells(&myint32s, 10, 3);
 
     // populate each array with random values using for loop; look into: rand.urange
     //for( mov(0, ecx); ecx < ebx; inc(ebx) ) do
