@@ -5,12 +5,12 @@ static
 
 
 begin qt2;
-   stdout.put(num8, nl); 
-   stdout.put(num8[1], nl); 
-   stdout.newln();
+   mov('a', eax);
+   stdout.put(eax, nl);
+   cmp(eax, 97);
+   jne EXITNOW;
+    stdout.put("[equal]", nl);
 
-   stdout.put(&num8, nl);
-   mov(&num8, eax);
-   mov(1, ebx);
-   stdout.put((type int8 [eax + ebx]), nl);
+    EXITNOW:
+    stdout.put("[exiting...]", nl);
 end qt2;

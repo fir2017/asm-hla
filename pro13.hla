@@ -16,48 +16,119 @@ program PRO13;
 #include("stdlib.hhf");
 
 static
-    myint8s     :int8[10]   := [0,0,0,0,5,0,0,0,0,0];
+    myint8s     :int8[10]   := [0,0,0,0,0,0,0,0,0,0];
     myint16s    :int16[10]  := [0,0,0,0,0,0,0,0,0,0];
     myint32s    :int32[10]  := [0,0,0,0,0,0,0,0,0,0];
 
-procedure displayCells(base_addr: dword; array_size: uns32; data_type: uns8);
+procedure displayCells(base_addr: dword; array_size: uns32; data_type: uns8; populate: uns8);
 begin displayCells;
     pushad();
     
-    mov(base_addr, eax);
+    mov(base_addr, ebx);
     for( mov(0, ecx); ecx < array_size; inc(ecx) ) do
         if(data_type == 1) then
-            stdout.put((type int32 ecx), ": ");
-            stdout.put( (type int8 [eax + ecx]), nl );
+            if(populate != 1) then
+                stdout.put((type int32 ecx), ": ");
+                stdout.put( (type int8 [ebx + ecx]), nl );
+            else
+                rand.range(-128, 127);
+                mov(eax, [ebx + ecx]);
+            endif;
         elseif(data_type == 2) then
-            stdout.put((type int32 ecx), ": ");
-            stdout.put( (type int16 [eax + ecx * 2]), nl );
+            if(populate != 1) then
+                stdout.put((type int32 ecx), ": ");
+                stdout.put( (type int16 [ebx + ecx * 2]), nl );
+            else
+                rand.range(-32768, 32767);
+                mov(eax, [ebx + ecx * 2]);
+            endif;
         else
-            stdout.put((type int32 ecx), ": ");
-            stdout.put( (type int32 [eax + ecx * 4]), nl );
+            if(populate != 1) then
+                stdout.put((type int32 ecx), ": ");
+                stdout.put( (type int32 [ebx + ecx * 4]), nl );
+            else
+                rand.range(-214748364, 214748364);
+                mov(eax, [ebx + ecx * 4]);
+            endif;
          endif;  
     endfor;
 
     popad();
 end displayCells;
 
+procedure resetCells(base_addr: dword; array_size: uns32; data_type: uns8);
+begin resetCells;
+    pushad();
+    
+    mov(0, eax);
+    mov(base_addr, ebx);
+    for( mov(0, ecx); ecx < array_size; inc(ecx) ) do
+        if(data_type == 1) then
+            mov(eax, [ebx + ecx]);
+        elseif(data_type == 2) then
+            mov(eax, [ebx + ecx * 2]);
+        else
+            mov(eax, [ebx + ecx * 4]);
+        endif;
+    endfor;
+
+    popad();
+end resetCells;
+
 
 begin PRO13;
+    rand.randomize();
 
-    displayCells(&myint8s, 10, 1);
-    displayCells(&myint16s, 10, 2);
-    displayCells(&myint32s, 10, 3);
+    START_PROGRAM:
+    forever
+        stdout.put("// PRINTING EMPTY ARRAYS...", nl,nl);
+        stdout.put("[INT8] DISPLAYING...", nl);
+        displayCells(&myint8s, 10, 1, 0);
+        stdout.put("[INT16] DISPLAYING...", nl);
+        displayCells(&myint16s, 10, 2, 0);
+        stdout.put("[INT32] DISPLAYING...", nl);
+        displayCells(&myint32s, 10, 3, 0);
 
-    // populate each array with random values using for loop; look into: rand.urange
-    //for( mov(0, ecx); ecx < ebx; inc(ebx) ) do
-    //
-    //endfor;
+        // POPULATING CELLS
+        displayCells(&myint8s, 10, 1, 1);
+        displayCells(&myint16s, 10, 2, 1);
+        displayCells(&myint32s, 10, 3, 1);
+        
+        stdout.put(nl,nl, "// PRINTING POPULATED ARRAYS...");
+        stdout.put("[INT8] DISPLAYING...", nl);
+        displayCells(&myint8s, 10, 1, 0);
+        stdout.put("[INT16] DISPLAYING...", nl);
+        displayCells(&myint16s, 10, 2, 0);
+        stdout.put("[INT32] DISPLAYING...", nl);
+        displayCells(&myint32s, 10, 3, 0);
 
-    //displayCells();
+        // RESETING CELLS
+        resetCells(&myint8s, 10, 1);
+        resetCells(&myint16s, 10, 1);
+        resetCells(&myint32s, 10, 1);
 
-    //resetCells();
+        stdout.put(nl,nl, "// PRINTING CLEARED ARRAYS...");
+        stdout.put("[INT8] DISPLAYING...", nl);
+        displayCells(&myint8s, 10, 1, 0);
+        stdout.put("[INT16] DISPLAYING...", nl);
+        displayCells(&myint16s, 10, 2, 0);
+        stdout.put("[INT32] DISPLAYING...", nl);
+        displayCells(&myint32s, 10, 3, 0);
 
-    //displayCells();
+        ASK_REPEAT:
+            stdout.newln();
+            stdout.put("Do you want to repeat program? (y/N): ");
+            stdin.flushInput();
+            stdin.getc();
+            and($5f, al);
+            cmp(al, 78); // NO
+            je EXIT_PROGRAM;
+            cmp(al, 89); // YES
+            je START_PROGRAM;
 
-    // repeat?
+            jmp ASK_REPEAT;
+    endfor;
+
+    EXIT_PROGRAM:
+    stdout.put("Exiting...");
 end PRO13;
