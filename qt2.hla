@@ -5,12 +5,6 @@ static
 
 
 begin qt2;
-   mov('a', eax);
-   stdout.put(eax, nl);
-   cmp(eax, 97);
-   jne EXITNOW;
-    stdout.put("[equal]", nl);
-
-    EXITNOW:
-    stdout.put("[exiting...]", nl);
+    mov($61, al);
+    stdout.putc(al);
 end qt2;
