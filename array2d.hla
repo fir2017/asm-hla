@@ -1,0 +1,12 @@
+program ARRAY2D;
+#include("stdlib.hhf");
+
+begin ARRAY2D;
+
+mov(5, eax); // 3 rows, 5 cols
+mul(3);
+mem.zalloc( @size(int32) * eax); 
+
+
+
+end ARRAY2D;

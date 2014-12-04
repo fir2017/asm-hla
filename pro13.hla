@@ -10,6 +10,9 @@
  * Working with index and scales
  * involving arrays and procedures.
  *
+ * POINT: To create test to populate
+ * program to make sure it works.
+ *
  */
 
 program PRO13;

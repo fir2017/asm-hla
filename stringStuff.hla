@@ -1,0 +1,30 @@
+program StringStuff;
+
+#include("stdlib.hhf");
+
+type
+    stringPtr: pointer to string;
+
+static
+    myString: stringPtr;
+    foo:    uns32;
+
+
+begin StringStuff;
+
+    str.alloc(25);
+    mov(eax, myString);
+
+    mov(myString, eax);
+    stdout.put("max length: ", (type int32 (type str.strRec [eax]).maxlen), nl);
+
+    str.free(myString);
+
+    mov(5, foo);
+    mov(&foo, ebx);
+    stdout.put(ebx, nl);
+    mov([ebx], eax);
+    stdout.put(eax, nl);
+    
+
+end StringStuff;

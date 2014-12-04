@@ -1,0 +1,11 @@
+program qq;
+#include("stdlib.hhf");
+
+begin qq;
+
+mem.alloc(10);
+mov(5, bl);
+mov(bl, [eax + 10]);
+stdout.put( (type int8 [eax + 10]), nl);
+
+end qq;

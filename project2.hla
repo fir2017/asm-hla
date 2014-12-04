@@ -4,7 +4,7 @@
  *
  * author           Low Saetern
  * created on       22 October 2014
- * last modified    12 November 2014
+ * last modified    17 November 2014
  *
  *
  * Project 2 helps solve world hunder issues.
@@ -15,78 +15,121 @@ program PROJECT2;
 #include("stdlib.hhf");
 
 
-procedure getAnswer(prompt: string; min: int32; max: int32); @returns("eax");
-begin getAnswer;
-    pushad();
+procedure getInput(prompt: string; min: int32; max: int32); @returns("eax");
+begin getInput;
 
     LOOP_ANSWER:
-        stdout.put(prompt);
-        stdin.flushInput();
         try
+            stdout.put(prompt);
+            stdin.flushInput();
             stdin.geti32();
-            cmp(eax, min);
-            jl BELOW_VALUE;
-            cmp(eax, max);
-            jg ABOVE_VALUE;
-            // if input valid, exit
-            jmp EX_LOOP;
+            unprotected
+                cmp(eax, min);
+                jl BELOW_VALUE;
+                cmp(eax, max);
+                jg ABOVE_VALUE;
+                jmp EX_LOOP; // if input valid, exit
+
+                BELOW_VALUE:
+                ABOVE_VALUE:
+                    stdout.put("Enter a correct value between ", min, " and ", max, ".", nl);
+                    jmp LOOP_ANSWER;
+
         anyexception
             stdout.put("Invalid input. Try again.", nl);
         endtry;
 
         jmp LOOP_ANSWER;
 
-        BELOW_VALUE:
-        ABOVE_VALUE:
-            stdout.put("Enter a correct value between ", min, " and ", max, ".", nl);
-            jmp LOOP_ANSWER;
 
     EX_LOOP:
-        mov(eax, ebx);
-    popad();
-end getAnswer;
-
-procedure allocateData(cell_qty: dword; dtype: dword);
-begin allocateData;
-    pushad();
-
-    // add 1 to store calculation
-    add(1, cell_qty);
-    cmp(dtype, 2);
-    je ALLOC_INT16;
-    cmp(dtype, 3);
-    je ALLOC_INT32;
-    
-    // ALLOC_INT8:
-        mem.alloc( (type int32 cell_qty) );
-        stdout.put(nl, (type uns32 cell_qty), " bytes have been allocated", nl, nl);
-        jmp EX_ALLOC;
-
-    ALLOC_INT16:
-        mov((type int32 cell_qty), eax);
-        imul(2, eax); 
-        mem.alloc(eax);
-        stdout.put(nl, (type int32 eax), " bytes have been allocated", nl, nl);
-        jmp EX_ALLOC;
-
-    ALLOC_INT32:
         
-    EX_ALLOC:
+end getInput;
+
+procedure displayCells(base_addr: dword; array_size: uns32; data_type: uns8);
+begin displayCells;
+    pushad();
     
+    mov(base_addr, ebx);
+    for( mov(1, ecx); ecx < array_size; inc(ecx) ) do
+        if(data_type == 1) then
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int8 [ebx + ecx]), nl );
+            add( [ebx + ecx], eax );
+        elseif(data_type == 2) then
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int16 [ebx + ecx * 2]), nl );
+        else
+            stdout.put((type int32 ecx), ": ");
+            stdout.put( (type int32 [ebx + ecx * 4]), nl );
+        endif;  
+    endfor;
+
+    stdout.put("SUM: ", [ebx + ecx], nl);
+
     popad();
-end allocateData;
+end displayCells;
+
 
 
 begin PROJECT2;
     // SPECIFY NUMBER OF CELLS
-    getAnswer("Enter number of cells desired (2-10): ", 2, 10);
-    mov(eax, ebx);
-    
+    getInput("Enter number of cells desired (2-10): ", 2, 10);
+    add(1, eax); // Adds 1 to store calculations
+    mov(eax, ebx); // Hold number of cell specified
+
     // SPECIFY TYPE OF CELLS
+    stdout.newln();
     stdout.put("Select desired data type", nl);
     stdout.put("[1] int8", nl, "[2] int16", nl, "[3] int32", nl, nl);
-    getAnswer("Your choice (1-3): ", 1, 3);
+    getInput("Your choice (1-3): ", 1, 3);
+    mov(eax, edx); // EDX holds data type
 
-    // ALLOCATE DATA
-    allocateData(edx, ebx);
+    // ALLOCATE SIZE OF CELL * DATA TYPE (1, 2, 4)
+    if(eax == 1) then
+        mov(1, eax); 
+        imul(ebx);
+    elseif(eax == 2) then
+        mov(2, eax);
+        imul(ebx);
+    else
+        mov(4, eax);
+        imul(ebx);
+    endif;
+
+    mov(eax, ecx); // ECX holds cell size
+    mem.zalloc(eax);
+
+    stdout.newln();
+    stdout.put((type int32 ecx), " bytes have been allocated.", nl, nl);
+    displayCells((type dword eax), (type uns32 ebx), (type uns8 dl));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // DISPLAY MENU
+
+    // SELECT CELLS TO EDIT
+
+    // OPTION TO CALCULATE SUM, AVERAGE, MINIMUM, MAXIMUM VALUE
+
+    // DISPLAY TYPE OF CALCULATION AND RESULT
+    // SUM AND AVERAGE MAY OVERFLOW, IF SO, ADD [ERROR] TO RESULT
+
+    // OPTION TO RESET CELL AND BEGIN FROM BEGINNING: SPECIFYING NUMBER OF CELLS
+
+    // OPTION TO QUIT
+
+    // OPTION TO CHANGE PRESENTATION FROM DECIMAL (default), BINARY, HEX
 end PROJECT2;

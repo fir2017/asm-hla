@@ -5,6 +5,12 @@ static
 
 
 begin qt2;
-    mov($61, al);
-    stdout.putc(al);
+    mov(5, eax);
+    mem.zalloc(eax); // mem.zalloc creates the array and fills w/ 0's
+
+    mov(5, ebx);
+    mov(0, ecx);
+    mov(ebx, [eax + ecx]);
+
+    stdout.put( (type uns32 [eax+ecx]), nl);
 end qt2;

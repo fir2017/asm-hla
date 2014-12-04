@@ -1,0 +1,233 @@
+/* Challenge 14
+ *
+ *
+ * author       Low Saetern
+ * created      02 December 2014
+ * author       03 December 2014
+ *
+ * 
+ * Create and modify cells
+ *
+ */
+
+program PRO14;
+#include("stdlib.hhf");
+
+static
+    baseAddress     :dword;
+    iArraySize      :uns32;
+    iDataType       :uns32;
+    cmpfirst        :uns8;
+    cmpsecond       :uns8;
+
+// PROCEDURES
+procedure getInput(prompt: string; min: int32; max: int32); @returns("eax");
+begin getInput;
+
+    LOOP_INPUT:
+
+    try
+        stdout.put(prompt);
+        stdin.flushInput();
+        stdin.geti32();
+
+        unprotected
+            cmp(eax, min);
+            jl LOOP_INPUT;
+            cmp(eax, max);
+            jg LOOP_INPUT;
+            jmp EXIT_INPUT;
+
+
+        anyexception
+            stdout.put("Please enter values between ", 
+                      (type int32 min), " and ", 
+                      (type int32 max), ".", nl);
+            jmp LOOP_INPUT;
+    endtry;
+
+    EXIT_INPUT:
+    
+end getInput;
+
+procedure editCell(baseAddr: dword; targetCell: uns32; dataType: uns32);
+begin editCell;
+
+    pushad();
+    
+    mov(baseAddr, ebx);
+    mov(targetCell, edx);
+    mov(dataType, ecx);
+
+    cmp(ecx, 3);
+    je SET_INT32;
+    cmp(ecx, 2);
+    je SET_INT16;
+    jmp SET_INT8;
+
+    SET_INT32:
+        getInput("Input a value to set: ", -214748364, 214748364); // 8 and 7 removed from end
+        mov(eax, [ebx+edx*4]);
+        jmp ESET_INT;
+
+    SET_INT16:
+        getInput("Input a value to set: ", -32768, 32767);
+        mov(ax, [ebx+edx*2]);
+        jmp ESET_INT;
+
+    SET_INT8:
+        getInput("Input a value to set: ", -127, 127);
+        mov(al, [ebx+edx*1]);
+
+    ESET_INT:
+
+    popad();
+
+end editCell;
+
+
+procedure computeLargest(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin computeLargest;
+    pushad();
+
+    mov(baseAddr, eax);
+
+    for( mov(0, ecx); ecx < arraySize; inc(ecx) ) do
+
+        mov([eax + ecx], ebx);
+        mov(arraySize, edx);
+        mov([eax + edx + 1], edx);
+
+        if(ebx > edx) then
+            mov(ebx, [eax + edx + 1]);
+        endif;
+
+    endfor;
+
+    stdout.put("Greatest: ", (type int8 [eax + edx + 1]), nl);
+
+    popad();
+end computeLargest;
+
+
+procedure displayCells(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin displayCells;
+    
+    pushad();
+
+    mov(0, ecx); // counter used for looping
+    mov(baseAddr, eax);
+    mov(arraySize, ebx);
+    mov(dataType, edx);
+
+    LOOP_ARRAYS:
+
+        cmp(edx, 3);
+        je INT_32;
+        cmp(edx, 2);
+        je INT_16;
+        jmp INT_8;
+
+
+        INT_32:
+            stdout.put((type int32 ecx), ": ", (type int32 [eax + ecx * 4]), nl);
+            jmp ELOOP_ARRAYS;
+
+        INT_16:
+            stdout.put((type int32 ecx), ": ", (type int16 [eax + ecx * 2]), nl);
+            jmp ELOOP_ARRAYS;
+
+        INT_8:
+            stdout.put((type int32 ecx), ": ", (type int8 [eax + ecx * 1]), nl);
+
+    ELOOP_ARRAYS:
+
+    inc(ecx); // If condition is met, exit loop
+    cmp(ecx, ebx);
+    jne LOOP_ARRAYS;
+
+
+    // calculate end address, print greatest value
+    if(edx == 3) then
+        computeLargest(baseAddr, arraySize, dataType);
+    elseif(edx == 2) then
+        computeLargest(baseAddr, arraySize, dataType);
+    else
+        computeLargest(baseAddr, arraySize, dataType);
+    endif;
+
+
+    popad();
+
+end displayCells;
+
+
+begin PRO14;
+    
+    MAIN_LOOP:
+
+        getInput("Enter amount of cell desired: ", 2, 10);
+        mov(eax, iArraySize);
+        add(1, eax);
+        mov(eax, ebx); // ebx holds array size to free up eax for data type
+
+        getInput("What data type do you want? 1: int8; 2: int16; 3: int32): ", 1, 3);
+        mov(eax, iDataType);
+        cmp(eax, 3);
+        je USE_INT32;
+        cmp(eax, 2);
+        je USE_INT16;
+        jmp USE_INT8;
+
+        USE_INT32:
+            mov(4, eax); 
+            mul(ebx); // ebx (array size) is multiplied by eax (data type);
+            mov(eax, ebx);
+            mem.zalloc(eax);
+            mov(eax, baseAddress);
+            jmp EUSE_INT;
+
+        USE_INT16:
+            mul(ebx);
+            mov(eax, ebx);
+            mem.zalloc(eax);
+            mov(eax, baseAddress);
+            jmp EUSE_INT;
+
+        USE_INT8:
+            mem.zalloc(ebx);
+            mov(eax, baseAddress);
+
+        EUSE_INT:
+            stdout.put( (type int32 ebx), " bytes allocated.", nl );
+
+    EDIT_LOOP:
+        displayCells(baseAddress, iArraySize, iDataType);
+
+        stdout.put("1: Edit a Cell", nl);
+        stdout.put("2: Exit Program", nl);
+        stdout.put("Enter an Option: ");
+        stdin.flushInput();
+        stdin.getu32();
+        
+        cmp(eax, 2);
+        je EXIT_EDIT;
+
+        // EDIT CELL
+        getInput("What cell do you want to edit?: ", 0, 9);
+        editCell(baseAddress, eax, iDataType);
+        jmp EDIT_LOOP;
+
+
+    EXIT_EDIT:
+    mem.free(baseAddress);
+    stdout.put("Memory has been freed!", nl);
+
+    stdout.put("Do you want to restart the program? (y/n): ");
+    stdin.flushInput();
+    stdin.getc();
+    and($5f, al);
+    cmp(al, 89);
+    je MAIN_LOOP;
+
+end PRO14;
