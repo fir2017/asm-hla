@@ -1,0 +1,58 @@
+program test_idea;
+#include( "stdlib.hhf" );
+static
+  mem_address:  dword;
+  off_set_m:  uns32;
+
+procedure alloc_cells(cell_size: uns32; cell_number: uns32);
+
+begin alloc_cells;
+  cmp(cell_size,1);
+  je CELL_8;
+  cmp(cell_size,2);
+  je CELL_16;
+  cmp(cell_size,3);
+  je CELL_32;
+
+  CELL_8:
+    mov(1, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mem.zalloc(eax);
+    mov(eax,mem_address);
+    jmp EX_ALLOC;
+  CELL_16:
+    mov(2, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mul(@size(int16), eax);
+    mem.zalloc(eax);
+    mov(eax, mem_address);
+    jmp EX_ALLOC;
+  CELL_32:
+    mov(4, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mul(@size(int32), eax);
+    mem.zalloc(eax);
+    mov(eax, mem_address);
+    jmp EX_ALLOC;
+
+  EX_ALLOC:
+end alloc_cells; 
+begin test_idea;
+  alloc_cells(1, 5);
+  mov(mem_address, ebx);
+  mov(5, eax);
+  mul(off_set_m, eax);
+  stdout.put((type int32 eax),nl);
+/*
+  add(eax, ebx);
+  mov(30, ecx);
+  mov(ecx, [ebx]); 
+*/
+
+mem.zalloc(6);
+mov(30, ecx);
+mov(ecx, [eax + 5]);
+end test_idea;

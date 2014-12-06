@@ -1,0 +1,53 @@
+program LARGEVALUE;
+#include("stdlib.hhf");
+
+procedure findLargest(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin findLargest;
+    
+    pushad();
+
+    mov(baseAddr, eax);
+    
+    for( mov(0, ecx); ecx < arraySize; inc(ecx) ) do
+        
+        mov( [eax+ecx], ebx );
+        mov( arraySize, edx );
+        add(1, edx);
+        mov( [eax+edx], edx );
+
+        if( ebx >= edx ) then
+            
+            mov( arraySize, edx);
+            add(1, edx);
+            mov( bl, [eax+edx] );
+            stdout.put( "[eax + arraySize]: ", (type int8 [eax+edx]), nl );
+            
+        endif;
+
+    endfor;
+    
+    mov( arraySize, edx);
+    add(1, edx);
+    stdout.put( "Largest Value: ", (type int8 [eax+edx]), nl );
+
+    popad();
+
+end findLargest;
+
+begin LARGEVALUE;
+
+mem.zalloc(11);
+
+mov(5, ecx);
+mov(ecx, [eax+0]);
+mov(10, ecx);
+mov(ecx, [eax+1]);
+mov(2, ecx);
+mov(ecx, [eax+2]);
+mov(16, ecx);
+mov(ecx, [eax+3]);
+mov(4, ecx);
+mov(ecx, [eax+4]);
+
+findLargest(eax, 10, 1);
+end LARGEVALUE;

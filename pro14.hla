@@ -99,7 +99,8 @@ begin computeLargest;
         mov([eax + edx + 1], edx);
 
         if(ebx > edx) then
-            mov(ebx, [eax + edx + 1]);
+            mov( arraySize, edx );
+            mov(bl, [eax + edx + 1]);
         endif;
 
     endfor;
