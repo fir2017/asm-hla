@@ -1,0 +1,634 @@
+program prog_project2;
+#include("stdlib.hhf");
+static
+  rep_view:                   char := 'd';
+  size_int:                   uns32 := 1;
+  mem_address:                dword;
+  calc_address:               dword;
+  cell_calculation:           uns32 := 1;
+  num_cells:                  uns32;
+  temp_store:                 uns8;
+  temp_store2:                int32;
+  off_set_m:                  uns32;
+  non_empty_counter:          int32 := 0;
+procedure getInt8(prompt:string);@RETURNS("al");@forward;
+procedure getInt16(prompt:string);@RETURNS("ax");@forward;
+procedure getInt32(prompt:string);@RETURNS("eax");@forward;
+procedure getUns32(prompt:string; min:uns32; max:uns32);@RETURNS("eax");@forward;
+ 
+
+
+procedure alloc_cells(cell_size: uns32; cell_number: uns32);
+
+begin alloc_cells;
+  cmp(cell_size,1);
+  je CELL_8;
+  cmp(cell_size,2);
+  je CELL_16;
+  cmp(cell_size,3);
+  je CELL_32;
+
+  CELL_8:
+    mov(1, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mem.zalloc(eax);
+    mov(eax,mem_address);
+    jmp EX_ALLOC;
+  CELL_16:
+    mov(2, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mul(2, eax);
+    mem.zalloc(eax);
+    mov(eax, mem_address);
+    jmp EX_ALLOC;
+  CELL_32:
+    mov(4, off_set_m);
+    mov(cell_number, eax);
+    add(1, eax);
+    mul(@size(int32), eax);
+    mem.zalloc(eax);
+    mov(eax, mem_address);
+    jmp EX_ALLOC;
+
+  EX_ALLOC:
+end alloc_cells; 
+
+
+procedure getInt8(prompt:string);
+
+begin getInt8;
+  REP_UNTI8:
+    stdout.put(prompt, nl, "--> ");
+    stdin.flushInput();
+    try
+      stdin.geti8();
+    unprotected
+      jmp EX_INT8;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+   endtry;
+   jmp REP_UNTI8;
+  EX_INT8:
+end getInt8;
+
+procedure getInt16(prompt:string);
+begin getInt16;
+  REP_UNTI16:
+    stdout.put(prompt, nl, "--> ");
+    stdin.flushInput();
+    try
+      stdin.geti16();
+    unprotected
+      jmp EX_INT16;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+    endtry;
+    jmp REP_UNTI16;
+  EX_INT16:
+end getInt16;
+
+procedure getInt32(prompt:string);
+begin getInt32;
+  REP_UNTI32:
+    stdout.put(prompt, nl, "--> ");
+    stdin.flushInput();
+    try
+      stdin.geti32();
+    unprotected
+      jmp EX_INT32;
+    anyexception
+      stdout.put("The value is invalid.",nl);
+    endtry;
+    jmp REP_UNTI32;
+  EX_INT32:
+end getInt32;
+
+procedure calc_max(baseAddress: dword; cells: uns32; dataType: uns32);
+begin calc_max;
+pushad();
+  mov(baseAddress, eax);
+  mov([eax], edx);
+  sub(1, cells);
+  mov(0, ebx);
+  cmp(dataType, 1);
+  je off_1;
+  cmp(dataType, 2);
+  je off_2;
+  cmp(dataType, 3);
+  je off_3;
+
+  off_1:
+    cmp(ebx, cells);
+    je ex_max8;
+    add(1, ebx);
+    cmp([eax + ebx * 1], dl);
+    jg ch_largest8;
+    jmp off_1;
+  ch_largest8:
+    mov([eax + ebx * 1], dl);
+    jmp off_1;
+  off_2:
+    cmp(ebx, cells);
+    je ex_max16;
+    add(1, ebx);
+    cmp([eax + ebx * 2], dx);
+    jg ch_largest16;
+    jmp off_2;
+  ch_largest16:
+    mov([eax + ebx * 2], dx);
+    jmp off_2;
+  off_3:
+    cmp(ebx, cells);
+    je ex_max32;
+    add(1, ebx);
+    cmp([eax + ebx * 4], edx);
+    jg ch_largest32;
+    jmp off_3;
+  ch_largest32:
+    mov([eax + ebx * 4], edx);
+    jmp off_3;
+ex_max8:
+mov(calc_address, eax);
+mov(dl, [eax]);
+jmp ex_max;
+ex_max16:
+mov(calc_address, eax);
+mov(dx, [eax]);
+jmp ex_max;
+ex_max32:
+mov(calc_address, eax);
+mov(edx, [eax]);
+
+ex_max:
+popad();
+end calc_max;
+
+procedure calc_min(baseAddress: dword; cells: uns32; dataType: uns32);
+begin calc_min;
+pushad();
+  mov(baseAddress, eax);
+  mov([eax], edx);
+  sub(1, cells);
+  mov(0, ebx);
+  cmp(dataType, 1);
+  je off_1;
+  cmp(dataType, 2);
+  je off_2;
+  cmp(dataType, 3);
+  je off_3;
+
+  off_1:
+    cmp(ebx, cells);
+    je ex_min8;
+    add(1, ebx);
+    cmp([eax + ebx * 1], dl);
+    jl ch_lowest8;
+    jmp off_1;
+  ch_lowest8:
+    mov([eax + ebx * 1], dl);
+    jmp off_1;
+  off_2:
+    cmp(ebx, cells);
+    je ex_min16;
+    add(1, ebx);
+    cmp([eax + ebx * 1], dx);
+    jl ch_lowest16;
+    jmp off_2;
+  ch_lowest16:
+    mov([eax + ebx * 2], dx);
+    jmp off_2;
+  off_3:
+    cmp(ebx, cells);
+    je ex_min32;
+    add(1, ebx);
+    cmp([eax + ebx * 1], edx);
+    jl ch_lowest32;
+    jmp off_3;
+  ch_lowest32:
+    mov([eax + ebx * 4], edx);
+    jmp off_3;
+ex_min8:
+mov(calc_address, eax);
+mov(dl, [eax]);
+jmp ex_min;
+ex_min16:
+mov(calc_address, eax);
+mov(dx, [eax]);
+jmp ex_min;
+ex_min32:
+mov(calc_address, eax);
+mov(edx, [eax]);
+ex_min:
+popad();
+end calc_min;
+
+
+procedure getUns32(prompt:string; min:uns32; max:uns32);
+begin getUns32;
+  REP_UNTU32:
+    stdout.put(prompt,nl, "--> ");
+    try
+      stdin.getu32();
+    anyexception
+      stdout.put("The value is invalid.", nl);
+    endtry;
+    cmp(eax, min);
+    jae GREATER_MIN;
+    jmp REP_UNTU32;
+    GREATER_MIN:
+      cmp(eax, max);
+      jbe EX_GET_UNS32;
+      jmp REP_UNTU32;
+    EX_GET_UNS32:
+end getUns32;
+
+procedure showBits(input: dword; dataType: uns32);
+begin showBits;
+  pushad();
+  mov(39, dl);
+  mov(5, bl);
+  mov(input, eax);
+  stdout.put("%");
+  BIT_SHOW:
+    cmp(dataType, 1);
+    je PREP_BIT8;
+    cmp(dataType, 2);
+    je PREP_BIT16;
+    cmp(dataType, 3);
+    je PREP_BIT32;
+    START_BITS:
+    cmp(cl, dl);
+    je EX_BITSHOW;
+    inc(cl);
+    cmp(cl, bl);
+    je BIT_;
+    cmp(dataType, 1);
+    je SH_8;
+    cmp(dataType, 2);
+    je SH_16;
+    cmp(dataType, 3);
+    je SH_32;
+    SH_8:
+      shl(1, al);
+      jmp skip_sh;
+    SH_16:
+      shl(1, ax);
+      jmp skip_sh;
+    SH_32:
+      shl(1, eax);
+      jmp skip_sh;
+    skip_sh:
+      jnc BIT0;
+      jc BIT1;
+
+  PREP_BIT8:
+    mov(30, cl);
+    mov(35, bl);
+    jmp START_BITS;
+  PREP_BIT16:
+    mov(20, cl);
+    mov(25,bl);
+    jmp START_BITS;
+  PREP_BIT32:
+    mov(0, cl);
+    mov(5,bl);
+    jmp START_BITS;
+  BIT0:
+    stdout.put("0");
+    jmp START_BITS;
+  BIT1:
+    stdout.put("1");
+    jmp START_BITS;
+  BIT_:
+    stdout.put("_");
+    add(5, bl);
+    jmp START_BITS;
+  EX_BITSHOW:
+  popad();
+end showBits;
+
+
+procedure value_rep(val_type: uns32; rep: char; value: uns32);
+begin value_rep;
+  pushad();
+  mov(val_type, edx);
+  mov(value , ecx);
+  mov(rep, bl);
+  cmp(bl, 'd');
+  je D_OUT;
+  cmp(bl, 'h');
+  je H_OUT;
+  cmp(bl, 'b');
+  je B_OUT;
+
+D_OUT:
+  mov([ecx], ebx);
+  cmp(edx, 1);
+  je INT_8D;
+  cmp(edx, 2);
+  je INT_16D;
+  cmp(edx, 3);
+  je INT_32D;
+  INT_8D:
+    stdout.put((type int8 bl));
+    jmp EX_REP;
+  INT_16D:
+    stdout.put((type int16 bx));
+    jmp EX_REP;
+  INT_32D:
+    stdout.put((type int32 ebx));
+  jmp EX_REP;
+
+H_OUT:
+  mov([ecx], ebx);
+  cmp(edx, 1);
+  je INT_8H;
+  cmp(edx, 2);
+  je INT_16H;
+  cmp(edx, 3);
+  je INT_32H;
+  INT_8H:
+    stdout.put(bl);
+    jmp EX_REP;
+  INT_16H:
+    stdout.put(bx);
+    jmp EX_REP;
+  INT_32H:
+    stdout.put(ebx);
+    jmp EX_REP;
+ 
+B_OUT:
+  mov([ecx], ebx);
+  showBits(ebx, size_int);
+EX_REP:
+popad();
+
+end value_rep;
+
+procedure display_cell(cells: uns32);
+begin display_cell;
+  pushad();
+  mov(1, eax);
+  mov(mem_address, ebx);
+  DISPLAY_LOOP:
+    cmp(ebx, calc_address);
+    je calc_dis;
+    stdout.put((type uns32 eax),": " );
+    value_rep(size_int, rep_view, ebx);
+    stdout.put(nl);
+    add(1, eax);
+    add(off_set_m, ebx); 
+    jmp DISPLAY_LOOP;
+  calc_dis:
+    stdout.put("calculation: ");
+
+    value_rep(size_int, rep_view, ebx);
+    stdout.put(nl);
+  popad();
+end display_cell;
+
+  
+  
+procedure change_rep;
+begin change_rep;
+  pushad();
+  mov(1, cl);
+  cmp(cl, temp_store);
+  je TO_DECIMAL;
+  mov(2, cl);
+  cmp(cl, temp_store);
+  je TO_HEXADECIMAL;
+  mov(3,cl);
+  cmp(cl, temp_store);
+  je TO_BINARY;
+
+  TO_DECIMAL:
+    mov('d', rep_view);
+    jmp EX_CHREP;
+  TO_HEXADECIMAL:
+    mov('h', rep_view);
+    jmp EX_CHREP;
+  TO_BINARY:
+    mov('b', rep_view);
+    jmp EX_CHREP;
+  EX_CHREP:
+  popad();
+end change_rep;
+
+procedure calc_adr_update;
+begin calc_adr_update;
+  pushad();
+  mov(mem_address, ebx);
+  mov(num_cells, eax);
+  mul(off_set_m, eax);
+  add(eax, ebx);
+  mov(ebx, calc_address);
+  popad();
+end calc_adr_update;
+
+procedure calc_sum(base_address: dword; num_ele: uns32; i_type:uns32); 
+begin calc_sum;
+pushad();
+  mov(0, temp_store2);
+  mov(base_address, ecx);
+  mov(0, ebx);
+  mov(0, eax);
+  cmp(i_type, 1);
+  je off_seti8;
+  cmp(i_type, 2);
+  je off_seti16;
+  cmp(i_type, 3);
+  je off_seti32;
+ 
+  off_seti8:
+    mov([ecx + ebx * 1], dl);
+    add(dl, al);
+    add(1, ebx);
+    cmp(ebx, num_ele);
+    jne off_seti8;
+    jmp ex_sum;
+  off_seti16:
+    mov([ecx + ebx * 2], dx);
+    add(dx, ax);
+    add(1, ebx);
+    cmp(ebx, num_ele);
+    jne off_seti16;
+    jmp ex_sum;
+  off_seti32:
+    mov([ecx + ebx * 4], edx);
+    add(edx, eax);
+    add(1, ebx);
+    cmp(ebx, num_ele);
+    jne off_seti32;
+    jmp ex_sum;
+
+
+  REP_ADD:
+ex_sum:
+mov(calc_address, ebx);
+mov(eax, [ebx]);
+popad();
+end calc_sum;
+
+procedure calc_avg(base_address: dword; num_ele: uns32; i_type:uns32); 
+
+begin calc_avg;
+  cmp(non_empty_counter, 0);
+  je ex_avg;
+  calc_sum(mem_address, num_cells, size_int);
+  mov(calc_address, ecx);
+  mov([ecx], eax);
+  mov(non_empty_counter, ebx);
+  idiv(ebx, edx:eax);
+  mov(eax, [ecx]);
+  ex_avg:
+popad();
+end calc_avg; 
+  
+
+
+procedure calc_task(calc_option: uns32);
+begin calc_task;
+  mov(calc_option, eax);
+  cmp(eax, 1);
+  je ADD_CELLS;
+  cmp(eax, 2);
+  je AVG_CELLS;
+  cmp(eax, 3);
+  je MIN_CELLS;
+  cmp(eax, 4);
+  je MAX_CELLS;
+
+  ADD_CELLS:
+    pushad();
+    calc_sum(mem_address, num_cells, size_int);
+    popad();
+    jmp ex_calc_task;    
+  AVG_CELLS:
+    pushad();
+    calc_avg(mem_address, num_cells, size_int);
+    popad();
+    jmp ex_calc_task;
+  MIN_CELLS:
+    pushad();
+    calc_min(mem_address, num_cells, size_int);
+    popad();
+    jmp ex_calc_task;  
+  MAX_CELLS:
+    pushad();
+    calc_max(mem_address, num_cells, size_int);
+    popad();
+ex_calc_task:
+end calc_task;
+
+begin prog_project2;
+REP_UNTIL:
+  RESET:
+  mov(1, cell_calculation);
+  stdout.put("How many cells do you want to use?", nl);
+  getUns32("Insert number of cells (2-10).",2, 10);
+  mov(eax, num_cells);
+  getUns32("What type do you want to use ? ", 1, 3);
+  mov(eax, size_int);
+  alloc_cells(size_int,num_cells);
+  calc_adr_update(); 
+  DISPLAY_AGAIN:
+    calc_task(cell_calculation);
+    display_cell(num_cells); 
+  stdout.put("menu",nl);
+  stdout.put("----",nl);
+  stdout.put("1:edit",nl);
+  stdout.put("2:change calculation",nl); 
+  stdout.put("3:change presentation",nl);
+  stdout.put("4:reset", nl);
+  stdout.put("5:quit", nl);
+  getUns32("select menu option",1, 5);
+  cmp(al, 1);
+  je EDIT;
+  cmp(al, 2);
+  je CALC;
+  cmp(al, 3);
+  je CH_REP;
+  cmp(al, 4);
+  je RESET_CELLS;
+  cmp(al, 5);
+  je EX_PROG;
+  CH_REP:
+    stdout.put("1: decimal",nl);
+    stdout.put("2: hexadecimal",nl);
+    stdout.put("3: binary",nl);
+    push(eax);
+    getUns32("choose representation",1,3);
+    mov(al, temp_store);
+    change_rep();
+    jmp DISPLAY_AGAIN;
+  EDIT:  
+    getUns32("Which cell do you want to edit?",1, num_cells); 
+    mov(mem_address, ebx);
+    sub(1, eax);
+    mul(off_set_m, eax);
+    add(eax, ebx);
+    stdout.put("what value would like the cell to hold?",nl);
+    cmp(size_int, 1);
+    je USE_INT8;
+    cmp(size_int, 2);
+    je USE_INT16;
+    cmp(size_int, 3);
+    je USE_INT32;
+    INT_AGAIN:
+      USE_INT8:
+        push(ebx);
+        getInt8("insert below");
+        pop(ebx);
+        mov(al, [ebx]);
+        jmp EX_EDIT;
+      USE_INT16:
+        push(ebx);
+        getInt16("insert below");
+        pop(ebx);
+        mov(ax, [ebx]);
+        jmp EX_EDIT;
+      USE_INT32:
+        push(ebx);
+        getInt32("insert below");
+        pop(ebx);
+        mov(eax, [ebx]);
+        jmp EX_EDIT;
+      EX_EDIT:
+      add(1, non_empty_counter);
+    jmp DISPLAY_AGAIN;
+
+  RESET_CELLS:
+    mov('d', rep_view);
+    jmp RESET;
+  CALC:
+    stdout.put("1: Sum of cells", nl);
+    stdout.put("2: Average of cells", nl);
+    stdout.put("3: Min of cells" , nl);
+    stdout.put("4: Max of cells", nl);
+    getUns32("Choose operation to be perfomed on cells. ", 1, 4);
+    cmp(eax, 1);
+    je ADD_OPTION;
+    cmp(eax, 2);
+    je AVG_OPTION;
+    cmp(eax, 3);
+    je MIN_OPTION;
+    cmp(eax, 4);
+    je MAX_OPTION;
+    ADD_OPTION:
+       mov(1, cell_calculation);
+       jmp DISPLAY_AGAIN;
+    AVG_OPTION:
+       mov(2, cell_calculation);
+       jmp DISPLAY_AGAIN;
+    MIN_OPTION:
+       mov(3, cell_calculation);
+       jmp DISPLAY_AGAIN;
+    MAX_OPTION:
+       mov(4, cell_calculation);
+       jmp DISPLAY_AGAIN;
+  EX_PROG:
+
+end prog_project2;

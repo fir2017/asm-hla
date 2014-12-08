@@ -1,0 +1,253 @@
+program Project2;
+#include("stdlib.hhf");
+
+// DECLARE PROCEDURES
+procedure getInput(prompt: string; min: uns32; max: uns32); @forward;
+procedure displayCells(baseAddr: dword; arraySize: uns32; dataType: uns32); @forward;
+procedure showBinary(arrayValue: int32; dataType: uns32); @forward;
+procedure editCells(baseAddr: dword; arraySize: uns32; dataType: uns32); @forward;
+//procedure setCalculation(); @forward;
+//procedure setPresentation(); @forward;
+procedure startProgram(resetValue: uns32); @forward;
+//procedure getSum(baseAddr: dword); @forward;
+//procedure getAverage(baseAddr: dword); @forward;
+//procedure getMinimum(baseAddr: dword); @forward;
+//procedure getMaximum(baseAddr: dword); @forward;
+
+// DECLARE VARIABLES
+static
+    base_addr       : uns32;
+    array_size      : uns32;
+    data_type       : uns32;
+    calc_choice     : uns32     := 1; // Choice for type of calculation (sum, avg, min, max)
+    display_type    : uns32     := 3; // Show decimal, binary, or hexadecimal
+    calc_value      : int32;
+
+procedure getInput(prompt: string; min: uns32; max: uns32);
+begin getInput;
+
+    forever
+        
+        try
+            stdout.put(prompt);
+            stdin.flushInput();
+            stdin.getu32();
+            
+            unprotected
+                breakif(eax >= min && eax <= max);
+
+            anyexception
+                stdout.put( "Please enter a value between ", min, " and ", max, ".", nl);
+        endtry;
+
+    endfor;
+
+end getInput;
+
+procedure showBinary(arrayValue: int32; dataType: uns32);
+begin showBinary;
+   pushad();
+
+    mov(arrayValue, eax);
+
+    stdout.put("%");
+    if(dataType == 1) then
+        for( mov(1, ecx); ecx < 9; inc(ecx) ) do
+            shl(1, al);
+            if(@c) then
+                stdout.put("1");
+            else
+                stdout.put("0");
+            endif;
+            if(ecx == 4) then
+                stdout.put("_");
+            endif;
+        endfor;
+        stdout.newln();
+    elseif(dataType == 2) then
+        for( mov(1, ecx); ecx < 17; inc(ecx) ) do
+            shl(1, ax);
+            if(@c) then
+                stdout.put("1");
+            else
+                stdout.put("0");
+            endif;
+            if(ecx == 4 || ecx == 8 || ecx == 12) then
+                stdout.put("_");
+            endif;
+        endfor;
+        stdout.newln();
+    else
+        for( mov(1, ecx); ecx < 33; inc(ecx) ) do
+            shl(1, eax);
+            if(@c) then
+                stdout.put("1");
+            else
+                stdout.put("0");
+            endif;
+            if(ecx == 4 || ecx == 8 || ecx == 12 || ecx == 16 || ecx == 20 || ecx == 24 || ecx == 28) then
+                stdout.put("_");
+            endif;
+        endfor;
+        stdout.newln();
+    endif;
+
+    popad();
+end showBinary;
+
+procedure displayCells(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin displayCells;
+
+    mov(baseAddr, eax);
+
+    for( mov(1, ecx); ecx < arraySize; inc(ecx) ) do
+        
+        if(display_type == 3) then // hex
+            if(dataType == 1) then
+                mov([eax + ecx], ebx);
+                stdout.put( (type uns32 ecx), ": $", bl, nl );
+            elseif(dataType == 2) then
+                mov([eax + ecx * 2], ebx);
+                stdout.put( (type uns32 ecx), ": $", bx, nl );
+            else
+                mov([eax + ecx * 4], ebx);
+                stdout.put( (type uns32 ecx), ": $", ebx, nl );
+            endif;
+        elseif(display_type == 2) then // binary
+            if(dataType == 1) then
+                stdout.put( (type uns32 ecx), ": " );
+                showBinary([eax + ecx], 1);
+            elseif(dataType == 2) then
+                stdout.put( (type uns32 ecx), ": " );
+                showBinary([eax + ecx * 2], 2);
+            else
+                stdout.put( (type uns32 ecx), ": " );
+                showBinary([eax + ecx * 4], 3);
+            endif;
+        else
+            if(dataType == 1) then // decimal
+                stdout.put( (type uns32 ecx), ": ", (type int8 [eax + ecx]), nl );
+            elseif(dataType == 2) then
+                stdout.put( (type uns32 ecx), ": ", (type int16 [eax + ecx * 2]), nl );
+            else
+                stdout.put( (type uns32 ecx), ": ", (type int32 [eax + ecx * 4]), nl );
+            endif;
+        endif;
+
+    endfor;
+
+    stdout.newln();
+
+    if(display_type == 1) then
+        if(calc_choice == 4) then
+            stdout.put( "MAXIMUM: ", calc_value, nl );
+        elseif(calc_choice == 3) then
+            stdout.put( "MINIMUM: ", calc_value, nl );
+        elseif(calc_choice == 2) then
+            stdout.put( "AVERAGE: ", calc_value, nl );
+        else
+            stdout.put( "SUM: ", calc_value, nl );
+        endif;
+    elseif(display_type == 2) then
+        if(calc_choice == 4) then
+            stdout.put( "MAXIMUM: ");
+            showBinary(calc_value, dataType);
+        elseif(calc_choice == 3) then
+            stdout.put( "MINIMUM: " );
+            showBinary(calc_value, dataType);
+        elseif(calc_choice == 2) then
+            stdout.put( "AVERAGE: " );
+            showBinary(calc_value, dataType);
+        else
+            stdout.put( "SUM: " );
+            showBinary(calc_value, dataType);
+        endif;
+    else
+        if(data_type == 1) then
+            if(calc_choice == 4) then
+                mov(calc_value, eax);
+                stdout.put( "MAXIMUM: $", al, nl );
+            elseif(calc_choice == 3) then
+                mov(calc_value, eax);
+                stdout.put( "MINIMUM: $", al, nl );
+            elseif(calc_choice == 2) then
+                mov(calc_value, eax);
+                stdout.put( "AVERAGE: $", al, nl );
+            else
+                mov(calc_value, eax);
+                stdout.put( "SUM: $", al, nl );
+            endif;
+        elseif(data_type == 2) then
+            if(calc_choice == 4) then
+                mov(calc_value, eax);
+                stdout.put( "MAXIMUM: $", ax, nl );
+            elseif(calc_choice == 3) then
+                mov(calc_value, eax);
+                stdout.put( "MINIMUM: $", ax, nl );
+            elseif(calc_choice == 2) then
+                mov(calc_value, eax);
+                stdout.put( "AVERAGE: $", ax, nl );
+            else
+                mov(calc_value, eax);
+                stdout.put( "SUM: $", ax, nl );
+            endif;
+        else
+            if(calc_choice == 4) then
+                mov(calc_value, eax);
+                stdout.put( "MAXIMUM: $", eax, nl );
+            elseif(calc_choice == 3) then
+                mov(calc_value, eax);
+                stdout.put( "MINIMUM: $", eax, nl );
+            elseif(calc_choice == 2) then
+                mov(calc_value, eax);
+                stdout.put( "AVERAGE: $", eax, nl );
+            else
+                mov(calc_value, eax);
+                stdout.put( "SUM: $", eax, nl );
+            endif;
+        endif;
+    endif;
+
+end displayCells;
+
+procedure editCells(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin editCells;
+
+end editCells;
+
+procedure startProgram(resetValue: uns32);
+begin startProgram;
+
+    getInput("Enter number of cells desired (2-10): ", 2, 10);
+    add(1, eax);
+    mov(eax, array_size);
+
+    stdout.newln();
+    stdout.put("Select desired data type", nl,
+                "[1] int8", nl,
+                "[2] int16", nl,
+                "[3] int32", nl,nl);
+    getInput("Your choice (1-3): ", 1, 3);
+    mov(eax, data_type);
+
+    mul(array_size);
+    stdout.newln();
+    stdout.put( (type uns32 eax), " bytes have been allocated.", nl, nl); 
+
+    mem.zalloc(eax); // Allocate memory for specified number of bytes
+    mov(eax, base_addr);
+
+    stdout.put( "Press ENTER to continue..." );
+    stdin.readLn();
+    console.cls();
+
+end startProgram;
+
+
+begin Project2;
+
+    startProgram(0);
+    displayCells(base_addr, array_size, data_type);
+
+end Project2;
+

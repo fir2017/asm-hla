@@ -1,0 +1,18 @@
+program MyProgram;
+#include("stdlib.hhf");
+
+begin MyProgram;
+
+    mov(0, cl);
+
+    FOREVER_LOOP:
+
+        cmp(cl, 5);
+        je END_FOREVER;
+        stdout.put("*");
+        inc(cl);
+        jmp FOREVER_LOOP;
+
+    END_FOREVER:
+
+end MyProgram;

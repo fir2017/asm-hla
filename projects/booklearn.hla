@@ -1,0 +1,16 @@
+program booklearn;
+#include("stdlib.hhf");
+
+begin booklearn;
+
+mov(0, cl);
+
+WHILE_LOOP:
+cmp(cl, 5);
+jnb END_WHILE;
+    stdout.put("*");
+    inc(cl);
+    jmp WHILE_LOOP;
+END_WHILE:
+
+end booklearn;
