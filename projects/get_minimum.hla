@@ -6,7 +6,10 @@ begin calc_min;
     push(eax);
     
     mov(baseAddr, eax);
-    for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+    mov(1, ecx);
+    FOR_LOOP_CALC_MIN:
+    cmp(ecx, arraySize);
+    jnl EXIT_FOR_LOOP_CALC_MIN;
 
         cmp(ecx, 2);
         jnge SETUP_MIN_FUNCTION;
@@ -29,7 +32,9 @@ begin calc_min;
 
         END_MIN_TEST:
 
-    endfor;
+    inc(ecx);
+    jmp FOR_LOOP_CALC_MIN;
+    EXIT_FOR_LOOP_CALC_MIN:
 
     mov(dl, [eax]);
     stdout.put("Smallest value: ", (type int8 [eax]), nl);
