@@ -25,8 +25,9 @@ begin calc_average;
     mov(dl, al);
     idiv(bl, ax);
 
-    mov(al, [eax]);
-    stdout.put("Average: ", (type int32 [eax]), nl);
+    // ERROR W/ THESE CODE BELOW 
+    //mov(al, [eax]);
+    //stdout.put("Average: ", (type int8 [eax]), nl);
 
     pop(eax); 
 end calc_average;
