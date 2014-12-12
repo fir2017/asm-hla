@@ -1,0 +1,44 @@
+program GetMinimum;
+#include("stdlib.hhf");
+
+procedure getMin(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin getMin;
+    push(eax);
+    
+    mov(baseAddr, eax);
+    for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+        if(ecx >= 2) then
+            stdout.put("Test: ", (type int8 [eax+ecx]), " < ", (type int8 bl), nl);
+            if((type int8 [eax+ecx]) < (type int8 bl)) then
+                mov([eax+ecx], ebx);
+                stdout.put("[eax+0] = ", (type int8 bl), nl);
+            endif;
+        else
+            mov([eax+ecx], ebx);
+        endif;
+
+        stdout.put( (type int32 ecx), ": ", (type int8 [eax+ecx]), nl);
+    endfor;
+
+    mov(ebx, [eax]);
+    stdout.put("Smallest value: ", (type int8 [eax]), nl);
+
+    pop(eax); 
+end getMin;
+begin GetMinimum;
+    
+    rand.randomize();
+
+    mem.zalloc(@size(int8)*10);
+
+    for(mov(1, ecx); ecx < 10; inc(ecx)) do
+        push(eax); // save array ptr addr
+        rand.range(-128,127);
+        mov(eax, ebx);
+        pop(eax);
+        mov(ebx, [eax + ecx]);
+    endfor;
+
+    getMin(eax, 10, 1); 
+
+end GetMinimum;
