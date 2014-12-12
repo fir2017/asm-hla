@@ -20,14 +20,16 @@ begin calc_average;
         endif;
     endfor;
 
-    mov(0, eax); 
     mov((type int8 arraySize), bl);
+    dec(bl);            // decrease by 1 to offset the placeholder
+    cbw();
     mov(dl, al);
-    idiv(bl, ax);
+    idiv(bl, ax);       // math to find average
+    mov(al, bl);        // move result into BL register
 
-    // ERROR W/ THESE CODE BELOW 
-    //mov(al, [eax]);
-    //stdout.put("Average: ", (type int8 [eax]), nl);
+    mov(baseAddr, eax);
+    mov(bl, [eax]);
+    stdout.put("Average: ", (type int8 [eax]), nl);
 
     pop(eax); 
 end calc_average;

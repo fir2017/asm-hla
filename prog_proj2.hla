@@ -1,3 +1,9 @@
+
+
+
+
+
+
 program prog_project2;
 #include("stdlib.hhf");
 static
@@ -448,27 +454,38 @@ pushad();
     add(1, ebx);
     cmp(ebx, num_ele);
     jne off_seti8;
-    jmp ex_sum;
+    jmp ex_sum8;
   off_seti16:
     mov([ecx + ebx * 2], dx);
     add(dx, ax);
     add(1, ebx);
     cmp(ebx, num_ele);
     jne off_seti16;
-    jmp ex_sum;
+    jmp ex_sum16;
   off_seti32:
     mov([ecx + ebx * 4], edx);
     add(edx, eax);
     add(1, ebx);
     cmp(ebx, num_ele);
     jne off_seti32;
-    jmp ex_sum;
+    jmp ex_sum32;
 
 
   REP_ADD:
-ex_sum:
+ex_sum8:
+mov(calc_address, ebx);
+mov(al, [ebx]);
+jmp ex_sum;
+ex_sum16:
+mov(calc_address, ebx);
+mov(ax, [ebx]);
+jmp ex_sum;
+ex_sum32:
 mov(calc_address, ebx);
 mov(eax, [ebx]);
+
+ex_sum:
+
 popad();
 end calc_sum;
 
