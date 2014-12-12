@@ -6,39 +6,121 @@ begin calc_min;
     push(eax);
     
     mov(baseAddr, eax);
-    mov(1, ecx);
-    FOR_LOOP_CALC_MIN:
-    cmp(ecx, arraySize);
-    jnl EXIT_FOR_LOOP_CALC_MIN;
 
-        cmp(ecx, 2);
-        jnge SETUP_MIN_FUNCTION;
+    cmp(dataType, 1);
+    je MIN_INT8;
+    cmp(dataType, 2);
+    je MIN_INT16;
+    cmp(dataType, 3);
+    je MIN_INT32;
 
-            mov([eax+ecx], bl);
+    MIN_INT8:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT8:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT8;
 
-            stdout.put("Test: ", (type int8 bl), " < ", (type int8 dl), nl);
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT8;
 
-            cmp(bl, dl);
-            jnl END_MIN_TEST;
+                mov([eax+ecx], bl);
+
+                //stdout.put("Test: ", (type int8 bl), " < ", (type int8 dl), nl);
+
+                cmp(bl, dl);
+                jnl END_TEST_MIN_INT8;
+
+                    mov([eax+ecx], dl);
+                    //stdout.put("[eax+0] = ", (type int8 dl), nl);
+
+                jmp END_TEST_MIN_INT8;
+
+            SETUP_MIN_INT8:
 
                 mov([eax+ecx], dl);
-                stdout.put("[eax+0] = ", (type int8 dl), nl);
 
-            jmp END_MIN_TEST;
+            END_TEST_MIN_INT8:
 
-        SETUP_MIN_FUNCTION:
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT8;
+        EXIT_FOR_LOOP_MIN_INT8:
 
-            mov([eax+ecx], dl);
+        mov(dl, [eax]);
+        //stdout.put("Smallest value: ", (type int8 [eax]), nl);
+    jmp EXIT_MIN_FUNC;
 
-        END_MIN_TEST:
+    MIN_INT16:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT16:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT16;
 
-    inc(ecx);
-    jmp FOR_LOOP_CALC_MIN;
-    EXIT_FOR_LOOP_CALC_MIN:
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT16;
 
-    mov(dl, [eax]);
-    stdout.put("Smallest value: ", (type int8 [eax]), nl);
+                mov([eax+ecx*2], bx);
 
+                //stdout.put("Test: ", (type int16 bx), " < ", (type int16 dx), nl);
+
+                cmp(bx, dx);
+                jnl END_TEST_MIN_INT16;
+
+                    mov([eax+ecx*2], dx);
+                    //stdout.put("[eax+0] = ", (type int16 dx), nl);
+
+                jmp END_TEST_MIN_INT16;
+
+            SETUP_MIN_INT16:
+
+                mov([eax+ecx*2], dx);
+
+            END_TEST_MIN_INT16:
+
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT16;
+        EXIT_FOR_LOOP_MIN_INT16:
+
+        mov(dx, [eax]);
+        //stdout.put("Smallest value: ", (type int16 [eax]), nl);
+
+    jmp EXIT_MIN_FUNC;
+
+    MIN_INT32:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT32:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT32;
+
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT32;
+
+                mov([eax+ecx*4], ebx);
+
+                //stdout.put("Test: ", (type int32 ebx), " < ", (type int32 edx), nl);
+
+                cmp(ebx, edx);
+                jnl END_TEST_MIN_INT32;
+
+                    mov([eax+ecx*4], edx);
+                    //stdout.put("[eax+0] = ", (type int32 edx), nl);
+
+                jmp END_TEST_MIN_INT32;
+
+            SETUP_MIN_INT32:
+
+                mov([eax+ecx*4], edx);
+
+            END_TEST_MIN_INT32:
+
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT32;
+        EXIT_FOR_LOOP_MIN_INT32:
+
+
+        mov(edx, [eax]);
+        //stdout.put("Smallest value: ", (type int32 [eax]), nl);
+
+    EXIT_MIN_FUNC:
     pop(eax); 
 end calc_min;
 
@@ -46,16 +128,16 @@ begin GetMinimum;
     
     rand.randomize();
 
-    mem.zalloc(@size(int8)*10);
+    mem.zalloc(@size(int32)*10);
 
     for(mov(1, ecx); ecx < 10; inc(ecx)) do
         push(eax); // save array ptr addr
         rand.range(-128,127);
         mov(eax, ebx);
         pop(eax);
-        mov(ebx, [eax + ecx]);
+        mov(ebx, [eax + ecx * 4]);
     endfor;
 
-    calc_min(eax, 10, 1); 
+    calc_min(eax, 10, 3); 
 
 end GetMinimum;

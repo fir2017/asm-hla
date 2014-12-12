@@ -8,29 +8,82 @@ begin calc_average;
     
     mov(baseAddr, eax);
 
-    //mov(1, ecx);
-    //FOR_LOOP_CALC_AVG:
-    for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
-        mov([eax+ecx], bl);
-        add(bl, dl);
-        if(@o) then
-            mov(1, ERROR_FLAG);
-        else
-            mov(0, ERROR_FLAG);
-        endif;
-    endfor;
+    cmp(dataType, 1);
+    je AVG_INT8;
+    cmp(dataType, 2);
+    je AVG_INT16;
+    cmp(dataType, 3);
+    je AVG_INT32;
 
-    mov((type int8 arraySize), bl);
-    dec(bl);            // decrease by 1 to offset the placeholder
-    cbw();
-    mov(dl, al);
-    idiv(bl, ax);       // math to find average
-    mov(al, bl);        // move result into BL register
+    AVG_INT8:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx], bl);
+            add(bl, dl);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
 
-    mov(baseAddr, eax);
-    mov(bl, [eax]);
-    stdout.put("Average: ", (type int8 [eax]), nl);
+        mov((type int8 arraySize), bl);
+        dec(bl);            // decrease by 1 to offset the placeholder
+        mov(dl, al);
+        cbw();
+        idiv(bl, ax);       // math to find average
+        mov(al, bl);        // move result into BL register
 
+        mov(baseAddr, eax);
+        mov(bl, [eax]);
+    jmp EXIT_AVG_FUNC;
+
+    AVG_INT16:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*2], bx);
+            stdout.put( (type int32 ecx), ": ", (type int16 [eax+ecx*2]), nl);
+            add(bx, dx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov((type int16 arraySize), bx);
+        dec(bx);                // decrease by 1 to offset the placeholder
+        mov(dx, ax);
+        cwd();                  // sign extends 16 to 32 bit
+        idiv(bx, dx:ax);        // math to find average
+        mov(ax, bx);            // move result into BX register
+
+        mov(baseAddr, eax);
+        mov(bx, [eax]);
+        stdout.put("Average: ", (type int16 [eax]), nl);
+    jmp EXIT_AVG_FUNC;
+
+    AVG_INT32:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*4], ebx);
+            stdout.put( (type int32 ecx), ": ", (type int32 [eax+ecx*4]), nl);
+            add(ebx, edx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov((type int32 arraySize), ebx);
+        dec(ebx);                // decrease by 1 to offset the placeholder
+        mov(edx, eax);
+        cdq();                  // sign extends 16 to 32 bit
+        idiv(ebx, edx:eax);        // math to find average
+        mov(eax, ebx);            // move result into BX register
+
+        mov(baseAddr, eax);
+        mov(ebx, [eax]);
+
+    EXIT_AVG_FUNC:
     pop(eax); 
 end calc_average;
 
@@ -38,16 +91,18 @@ begin GetAverage;
     
     rand.randomize();
 
-    mem.zalloc(@size(int8)*10);
+    mem.zalloc(@size(int32)*10);
 
     for(mov(1, ecx); ecx < 10; inc(ecx)) do
         push(eax); // save array ptr addr
-        rand.range(-128,127);
+        rand.range(-133228,312537);
         mov(eax, ebx);
         pop(eax);
-        mov(ebx, [eax + ecx]);
+        mov(ebx, [eax + ecx * 4]);
     endfor;
 
-    calc_average(eax, 10, 1); 
+    calc_average(eax, 10, 3); 
+
+    mem.free(eax);
 
 end GetAverage;
