@@ -1,8 +1,8 @@
 program GetMinimum;
 #include("stdlib.hhf");
 
-procedure getMin(baseAddr: dword; arraySize: uns32; dataType: uns32);
-begin getMin;
+procedure calc_min(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin calc_min;
     push(eax);
     
     mov(baseAddr, eax);
@@ -35,7 +35,7 @@ begin getMin;
     stdout.put("Smallest value: ", (type int8 [eax]), nl);
 
     pop(eax); 
-end getMin;
+end calc_min;
 
 begin GetMinimum;
     
@@ -51,6 +51,6 @@ begin GetMinimum;
         mov(ebx, [eax + ecx]);
     endfor;
 
-    getMin(eax, 10, 1); 
+    calc_min(eax, 10, 1); 
 
 end GetMinimum;
