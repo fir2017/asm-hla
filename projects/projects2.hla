@@ -15,14 +15,46 @@ procedure startProgram(resetValue: uns32); @forward;
 //procedure getMaximum(baseAddr: dword); @forward;
 
 // DECLARE VARIABLES
+readonly
+    MINI8           : int8      := -128;
+    MAXI8           : int8      := 127;
+    MINI16          : int16     := -32768;
+    MAXI16          : int16     := 32767;
+    MINI32          : int32     := -2147483648;
+    MAXI32          : int32     := 2147483647;
+
 static
-    base_addr       : uns32;
+    base_addr       : dword;
     array_size      : uns32;
     data_type       : uns32;
     calc_choice     : uns32     := 1; // Choice for type of calculation (sum, avg, min, max)
-    display_type    : uns32     := 3; // Show decimal, binary, or hexadecimal
+    display_type    : uns32     := 1; // Show 1. decimal, 2. binary, or 3. hexadecimal
     calc_value      : int32;
+    min_value       : int32;
+    max_value       : int32;
+    avg_value       : int32;
+    sum_value       : int32;
 
+// DEFINE PROCEDURES
+procedure getMinimum(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin getMinimum;
+    pushad();
+
+    mov(baseAddr, eax);
+    
+    for( mov(1, ecx); ecx < arraySize; inc(ecx) ) do
+
+        mov([eax + ecx], ebx);
+        mov([eax + ecx + 1], edx);
+        if( ebx < edx ) then
+            mov(ebx, min_value);
+            stdout.put(min_value, nl);
+        endif;
+
+    endfor;
+
+    popad();
+end getMinimum;
 procedure getInput(prompt: string; min: uns32; max: uns32);
 begin getInput;
 
@@ -228,14 +260,21 @@ begin startProgram;
                 "[2] int16", nl,
                 "[3] int32", nl,nl);
     getInput("Your choice (1-3): ", 1, 3);
+    cmp(eax, 3);
+    jne DATA_TYPE_NOT_INT32;
+        mov(4, eax);
+    DATA_TYPE_NOT_INT32: // Do not assign value 4 to data type
     mov(eax, data_type);
 
-    mul(array_size);
+    imul(array_size);
     stdout.newln();
     stdout.put( (type uns32 eax), " bytes have been allocated.", nl, nl); 
 
     mem.zalloc(eax); // Allocate memory for specified number of bytes
+    stdout.put("eax: ", (type int32 eax), nl);
     mov(eax, base_addr);
+    stdout.put("base_addr: ", base_addr, nl);
+    stdout.put("&base_addr: ", &base_addr, nl);
 
     stdout.put( "Press ENTER to continue..." );
     stdin.readLn();
@@ -248,6 +287,10 @@ begin Project2;
 
     startProgram(0);
     displayCells(base_addr, array_size, data_type);
+    mov(5, ecx);
+    mov(base_addr, eax);
+    mov(ecx, [eax + 1 *4]);
+    getMinimum(base_addr, array_size, data_type);
 
 end Project2;
 

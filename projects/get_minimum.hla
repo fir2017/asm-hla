@@ -7,24 +7,38 @@ begin getMin;
     
     mov(baseAddr, eax);
     for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
-        if(ecx >= 2) then
+
+        cmp(ecx, 2);
+        jnge SETUP_MIN_FUNCTION;
+
             stdout.put("Test: ", (type int8 [eax+ecx]), " < ", (type int8 bl), nl);
-            if((type int8 [eax+ecx]) < (type int8 bl)) then
-                mov([eax+ecx], ebx);
-                stdout.put("[eax+0] = ", (type int8 bl), nl);
-            endif;
-        else
-            mov([eax+ecx], ebx);
-        endif;
+
+            mov((type int8 [eax+ecx]), bl);
+
+            cmp(bl, dl);
+            jnl END_MIN_TEST;
+
+                mov((type int8 [eax+ecx]), dl);
+                stdout.put("[eax+0] = ", (type int8 dl), nl);
+
+            jmp END_MIN_TEST;
+
+        SETUP_MIN_FUNCTION:
+
+            mov((type int8 [eax+ecx]), dl);
+
+        END_MIN_TEST:
 
         stdout.put( (type int32 ecx), ": ", (type int8 [eax+ecx]), nl);
+
     endfor;
 
-    mov(ebx, [eax]);
+    mov((type int8 bl), [eax]);
     stdout.put("Smallest value: ", (type int8 [eax]), nl);
 
     pop(eax); 
 end getMin;
+
 begin GetMinimum;
     
     rand.randomize();
