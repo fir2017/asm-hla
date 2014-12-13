@@ -1,3 +1,19 @@
+/*
+ * PROJECT 2
+ *
+ *
+ * author           Low Saetern
+ * created          10 November 2014
+ * modified         12 December 2014
+ * 
+ *
+ * Create and modify cells with
+ * multiple features such as...
+ * presentation, calculation
+ *
+ *
+ */
+
 program Project2;
 #include("stdlib.hhf");
 
@@ -26,7 +42,6 @@ static
     data_type       : int32;
     display_type    : int32     := 1; // Show 1. decimal, 2. binary, or 3. hexadecimal
     calc_choice     : int32     := 1; // Choice for type of calculation (sum, avg, min, max)
-    calc_value      : int32;
     ERROR_FLAG      : uns8;
 
 // DEFINE PROCEDURES
@@ -732,7 +747,7 @@ begin display_cells;
                 jnl EXIT_DISPLAY_FUNC;
 
                     mov([eax + ecx * 4], ebx);
-                    stdout.put( (type int32 ecx), ": $", eax, nl );
+                    stdout.put( (type int32 ecx), ": $", ebx, nl );
 
                 inc(ecx);
                 jmp FORLOOP_HEX_INT32;
@@ -759,17 +774,35 @@ begin display_cells;
 
         CALC_SUM_INT8:
             calc_sum(eax, arraySize, dataType);
-            stdout.put("SUM: ", (type int8 [eax]), nl);
+            stdout.put("SUM: ", (type int8 [eax]));
+            cmp(ERROR_FLAG, 1);
+            jne NO_SUM_ERROR_INT8;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_SUM_ERROR_INT8:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
         CALC_SUM_INT16:
             calc_sum(eax, arraySize, dataType);
-            stdout.put("SUM: ", (type int16 [eax]), nl);
+            stdout.put("SUM: ", (type int16 [eax]));
+            cmp(ERROR_FLAG, 1);
+            jne NO_SUM_ERROR_INT16;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_SUM_ERROR_INT16:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
         CALC_SUM_INT32:
             calc_sum(eax, arraySize, dataType);
-            stdout.put("SUM: ", (type int32 [eax]), nl);
+            stdout.put("SUM: ", (type int32 [eax]));
+            cmp(ERROR_FLAG, 1);
+            jne NO_SUM_ERROR_INT32;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_SUM_ERROR_INT32:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
     CALC_CHOICE_AVG:
@@ -782,17 +815,35 @@ begin display_cells;
 
         CALC_AVG_INT8:
             calc_average(eax, arraySize, dataType);
-            stdout.put("AVERAGE: ", (type int8 [eax]), nl);
+            stdout.put("AVERAGE: ", (type int8 [eax]));
+            cmp(ERROR_FLAG, 1);
+            jne NO_AVG_ERROR_INT8;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_AVG_ERROR_INT8:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
         CALC_AVG_INT16:
             calc_average(eax, arraySize, dataType);
             stdout.put("AVERAGE: ", (type int16 [eax]), nl);
+            cmp(ERROR_FLAG, 1);
+            jne NO_AVG_ERROR_INT16;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_AVG_ERROR_INT16:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
         CALC_AVG_INT32:
             calc_average(eax, arraySize, dataType);
             stdout.put("AVERAGE: ", (type int32 [eax]), nl);
+            cmp(ERROR_FLAG, 1);
+            jne NO_AVG_ERROR_INT32;
+                stdout.put("    [ERROR]", nl);
+                jmp EXIT_CALC_FUNC;
+            NO_AVG_ERROR_INT32:
+                stdout.newln();
             jmp EXIT_CALC_FUNC;
 
     CALC_CHOICE_MIN:
@@ -900,7 +951,7 @@ end edit_cells;
 begin Project2;
    
     BEGIN_PROGRAM:
-        console.cls();
+        console.cls(); mov(1, display_type); mov(1, calc_choice);
 
         get_input("Enter number of cells desired (2-10): ", 2, 10);
         add(1, eax); // inc by 1 for placeholder
