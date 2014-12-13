@@ -1,0 +1,34 @@
+program EditCells;
+#include("stdlib.hhf");
+static
+    ERROR_FLAG      : uns8;
+procedure edit_cells(baseAddr: dword; dataType: uns32);
+begin edit_cells;
+    push(eax);
+    
+    mov(baseAddr, eax);
+
+
+    EXIT_EDIT_FUNC:
+    pop(eax); 
+end edit_cells;
+
+begin EditCells;
+    
+    rand.randomize();
+
+    mem.zalloc(@size(int8)*10);
+
+    for(mov(1, ecx); ecx < 10; inc(ecx)) do
+        push(eax); // save array ptr addr
+        rand.range(-128,127);
+        mov(eax, ebx);
+        pop(eax);
+        mov(ebx, [eax + ecx * 1]);
+    endfor;
+
+    edit_cells(eax, 10, 1); 
+
+    mem.free(eax);
+
+end EditCells;

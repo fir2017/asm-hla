@@ -1,0 +1,144 @@
+program GetMaximum;
+#include("stdlib.hhf");
+
+procedure calc_min(baseAddr: dword; arraySize: uns32; dataType: uns32);
+begin calc_min;
+    push(eax);
+    
+    mov(baseAddr, eax);
+    mov(1, ecx);
+
+    cmp(dataType, 1);
+    je MAX_INT8;
+    cmp(dataType, 2);
+    je MAX_INT16;
+    cmp(dataType, 3);
+    je MAX_INT32;
+
+    MAX_INT8:
+        FOR_LOOP_MAX_INT8:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT8;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT8;
+
+                mov([eax+ecx], bl);
+
+                //stdout.put("Test: ", (type int8 bl), " > ", (type int8 dl), nl);
+
+                cmp(bl, dl);
+                jng END_TEST_MAX_INT8;
+
+                    mov([eax+ecx], dl);
+                    //stdout.put("[eax+0] = ", (type int8 dl), nl);
+
+                jmp END_TEST_MAX_INT8;
+
+            SETUP_MAX_INT8:
+
+                mov([eax+ecx], dl);
+
+            END_TEST_MAX_INT8:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT8;
+
+        EXIT_FOR_LOOP_MAX_INT8:
+
+        mov(dl, [eax]);
+        //stdout.put("value: ", (type int8 [eax]), nl);
+    
+    jmp END_MAX_FUNC;
+
+    MAX_INT16:
+        FOR_LOOP_MAX_INT16:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT16;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT16;
+
+                mov([eax+ecx*2], bx);
+
+                //stdout.put("Test: ", (type int16 bx), " > ", (type int16 dx), nl);
+
+                cmp(bx, dx);
+                jng END_TEST_MAX_INT16;
+
+                    mov([eax+ecx*2], dx);
+                    //stdout.put("[eax+0] = ", (type int16 dx), nl);
+
+                jmp END_TEST_MAX_INT16;
+
+            SETUP_MAX_INT16:
+
+                mov([eax+ecx*2], dx);
+
+            END_TEST_MAX_INT16:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT16;
+
+        EXIT_FOR_LOOP_MAX_INT16:
+
+        mov(dx, [eax]);
+        //stdout.put("value: ", (type int16 [eax]), nl);
+    
+    jmp END_MAX_FUNC;
+
+    MAX_INT32:
+        FOR_LOOP_MAX_INT32:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT32;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT32;
+
+                mov([eax + ecx * 4], ebx);
+
+                //stdout.put("Test: ", (type int32 ebx), " > ", (type int32 edx), nl);
+
+                cmp(ebx, edx);
+                jng END_TEST_MAX_INT32;
+
+                    mov([eax + ecx * 4], edx);
+                    //stdout.put("[eax+0] = ", (type int32 edx), nl);
+
+                jmp END_TEST_MAX_INT32;
+
+            SETUP_MAX_INT32:
+
+                mov([eax + ecx * 4], edx);
+
+            END_TEST_MAX_INT32:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT32;
+
+        EXIT_FOR_LOOP_MAX_INT32:
+
+        mov(edx, [eax]);
+        //stdout.put("value: ", (type int32 [eax]), nl);
+
+    END_MAX_FUNC:
+    pop(eax); 
+end calc_min;
+
+begin GetMaximum;
+    
+    rand.randomize();
+
+    mem.zalloc(@size(int32)*10);
+
+    for(mov(1, ecx); ecx < 10; inc(ecx)) do
+        push(eax); // save array ptr addr
+        rand.range(-128,127);
+        mov(eax, ebx);
+        pop(eax);
+        mov(ebx, [eax + ecx * 4]);
+    endfor;
+
+    calc_min(eax, 10, 3); 
+
+end GetMaximum;

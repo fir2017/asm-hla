@@ -1,0 +1,1036 @@
+program Project2;
+#include("stdlib.hhf");
+
+// DECLARE PROCEDURES
+procedure get_input(prompt: string; min: int32; max: int32); @forward;
+procedure display_cells(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+procedure show_binary(value: dword; dataType: int32); @forward;
+procedure edit_cells(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+procedure calc_sum(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+procedure calc_average(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+procedure calc_min(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+procedure calc_max(baseAddr: dword; arraySize: int32; dataType: int32); @forward;
+
+// DECLARE VARIABLES
+readonly
+    MINI8           : int8      := -128;
+    MAXI8           : int8      := 127;
+    MINI16          : int16     := -32768;
+    MAXI16          : int16     := 32767;
+    MINI32          : int32     := -2147483648;
+    MAXI32          : int32     := 2147483647;
+
+static
+    base_addr       : dword;
+    array_size      : int32;
+    data_type       : int32;
+    display_type    : int32     := 1; // Show 1. decimal, 2. binary, or 3. hexadecimal
+    calc_choice     : int32     := 1; // Choice for type of calculation (sum, avg, min, max)
+    calc_value      : int32;
+    ERROR_FLAG      : uns8;
+
+// DEFINE PROCEDURES
+procedure get_input(prompt: string; min: int32; max: int32);
+begin get_input;
+
+    FOREVER_LOOP_GET_INPUT:
+        
+        try
+            stdout.put(prompt);
+            stdin.flushInput();
+            stdin.geti32();
+            
+            unprotected
+                cmp(eax, min);
+                jnge FOREVER_LOOP_GET_INPUT;
+                cmp(eax, max);
+                jnle FOREVER_LOOP_GET_INPUT;
+                jmp EXIT_FOREVER_LOOP_GET_INPUT;
+                
+            anyexception
+                stdout.put( "Please enter a value between ", min, " and ", max, ".", nl,nl,nl);
+        endtry;
+
+    jmp FOREVER_LOOP_GET_INPUT;
+
+    EXIT_FOREVER_LOOP_GET_INPUT:
+
+end get_input;
+
+procedure calc_max(baseAddr: dword; arraySize: int32; dataType: int32);
+begin calc_max;
+    push(eax);
+    
+    mov(baseAddr, eax);
+    mov(1, ecx);
+
+    cmp(dataType, 1);
+    je MAX_INT8;
+    cmp(dataType, 2);
+    je MAX_INT16;
+    cmp(dataType, 3);
+    je MAX_INT32;
+
+    MAX_INT8:
+        FOR_LOOP_MAX_INT8:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT8;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT8;
+
+                mov([eax+ecx], bl);
+
+                //stdout.put("Test: ", (type int8 bl), " > ", (type int8 dl), nl);
+
+                cmp(bl, dl);
+                jng END_TEST_MAX_INT8;
+
+                    mov([eax+ecx], dl);
+                    //stdout.put("[eax+0] = ", (type int8 dl), nl);
+
+                jmp END_TEST_MAX_INT8;
+
+            SETUP_MAX_INT8:
+
+                mov([eax+ecx], dl);
+
+            END_TEST_MAX_INT8:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT8;
+
+        EXIT_FOR_LOOP_MAX_INT8:
+
+        mov(dl, [eax]);
+        //stdout.put("value: ", (type int8 [eax]), nl);
+    
+    jmp END_MAX_FUNC;
+
+    MAX_INT16:
+        FOR_LOOP_MAX_INT16:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT16;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT16;
+
+                mov([eax+ecx*2], bx);
+
+                //stdout.put("Test: ", (type int16 bx), " > ", (type int16 dx), nl);
+
+                cmp(bx, dx);
+                jng END_TEST_MAX_INT16;
+
+                    mov([eax+ecx*2], dx);
+                    //stdout.put("[eax+0] = ", (type int16 dx), nl);
+
+                jmp END_TEST_MAX_INT16;
+
+            SETUP_MAX_INT16:
+
+                mov([eax+ecx*2], dx);
+
+            END_TEST_MAX_INT16:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT16;
+
+        EXIT_FOR_LOOP_MAX_INT16:
+
+        mov(dx, [eax]);
+        //stdout.put("value: ", (type int16 [eax]), nl);
+    
+    jmp END_MAX_FUNC;
+
+    MAX_INT32:
+        FOR_LOOP_MAX_INT32:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MAX_INT32;
+
+            cmp(ecx, 2);
+            jnge SETUP_MAX_INT32;
+
+                mov([eax + ecx * 4], ebx);
+
+                //stdout.put("Test: ", (type int32 ebx), " > ", (type int32 edx), nl);
+
+                cmp(ebx, edx);
+                jng END_TEST_MAX_INT32;
+
+                    mov([eax + ecx * 4], edx);
+                    //stdout.put("[eax+0] = ", (type int32 edx), nl);
+
+                jmp END_TEST_MAX_INT32;
+
+            SETUP_MAX_INT32:
+
+                mov([eax + ecx * 4], edx);
+
+            END_TEST_MAX_INT32:
+
+            inc(ecx);
+            jmp FOR_LOOP_MAX_INT32;
+
+        EXIT_FOR_LOOP_MAX_INT32:
+
+        mov(edx, [eax]);
+        //stdout.put("value: ", (type int32 [eax]), nl);
+
+    END_MAX_FUNC:
+    pop(eax); 
+end calc_max;
+
+procedure calc_min(baseAddr: dword; arraySize: int32; dataType: int32);
+begin calc_min;
+    push(eax);
+    
+    mov(baseAddr, eax);
+
+    cmp(dataType, 1);
+    je MIN_INT8;
+    cmp(dataType, 2);
+    je MIN_INT16;
+    cmp(dataType, 3);
+    je MIN_INT32;
+
+    MIN_INT8:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT8:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT8;
+
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT8;
+
+                mov([eax+ecx], bl);
+
+                //stdout.put("Test: ", (type int8 bl), " < ", (type int8 dl), nl);
+
+                cmp(bl, dl);
+                jnl END_TEST_MIN_INT8;
+
+                    mov([eax+ecx], dl);
+                    //stdout.put("[eax+0] = ", (type int8 dl), nl);
+
+                jmp END_TEST_MIN_INT8;
+
+            SETUP_MIN_INT8:
+
+                mov([eax+ecx], dl);
+
+            END_TEST_MIN_INT8:
+
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT8;
+        EXIT_FOR_LOOP_MIN_INT8:
+
+        mov(dl, [eax]);
+        //stdout.put("Smallest value: ", (type int8 [eax]), nl);
+    jmp EXIT_MIN_FUNC;
+
+    MIN_INT16:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT16:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT16;
+
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT16;
+
+                mov([eax+ecx*2], bx);
+
+                //stdout.put("Test: ", (type int16 bx), " < ", (type int16 dx), nl);
+
+                cmp(bx, dx);
+                jnl END_TEST_MIN_INT16;
+
+                    mov([eax+ecx*2], dx);
+                    //stdout.put("[eax+0] = ", (type int16 dx), nl);
+
+                jmp END_TEST_MIN_INT16;
+
+            SETUP_MIN_INT16:
+
+                mov([eax+ecx*2], dx);
+
+            END_TEST_MIN_INT16:
+
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT16;
+        EXIT_FOR_LOOP_MIN_INT16:
+
+        mov(dx, [eax]);
+        //stdout.put("Smallest value: ", (type int16 [eax]), nl);
+
+    jmp EXIT_MIN_FUNC;
+
+    MIN_INT32:
+        mov(1, ecx);
+        FOR_LOOP_MIN_INT32:
+        cmp(ecx, arraySize);
+        jnl EXIT_FOR_LOOP_MIN_INT32;
+
+            cmp(ecx, 2);
+            jnge SETUP_MIN_INT32;
+
+                mov([eax+ecx*4], ebx);
+
+                //stdout.put("Test: ", (type int32 ebx), " < ", (type int32 edx), nl);
+
+                cmp(ebx, edx);
+                jnl END_TEST_MIN_INT32;
+
+                    mov([eax+ecx*4], edx);
+                    //stdout.put("[eax+0] = ", (type int32 edx), nl);
+
+                jmp END_TEST_MIN_INT32;
+
+            SETUP_MIN_INT32:
+
+                mov([eax+ecx*4], edx);
+
+            END_TEST_MIN_INT32:
+
+        inc(ecx);
+        jmp FOR_LOOP_MIN_INT32;
+        EXIT_FOR_LOOP_MIN_INT32:
+
+
+        mov(edx, [eax]);
+        //stdout.put("Smallest value: ", (type int32 [eax]), nl);
+
+    EXIT_MIN_FUNC:
+    pop(eax); 
+end calc_min;
+
+procedure calc_average(baseAddr: dword; arraySize: int32; dataType: int32);
+begin calc_average;
+    push(eax);
+    
+    mov(baseAddr, eax);
+
+    cmp(dataType, 1);
+    je AVG_INT8;
+    cmp(dataType, 2);
+    je AVG_INT16;
+    cmp(dataType, 3);
+    je AVG_INT32;
+
+    AVG_INT8:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx], bl);
+            add(bl, dl);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov((type int8 arraySize), bl);
+        dec(bl);            // decrease by 1 to offset the placeholder
+        mov(dl, al);
+        cbw();
+        idiv(bl, ax);       // math to find average
+        mov(al, bl);        // move result into BL register
+
+        mov(baseAddr, eax);
+        mov(bl, [eax]);
+    jmp EXIT_AVG_FUNC;
+
+    AVG_INT16:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*2], bx);
+            //stdout.put( (type int32 ecx), ": ", (type int16 [eax+ecx*2]), nl);
+            add(bx, dx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov((type int16 arraySize), bx);
+        dec(bx);                // decrease by 1 to offset the placeholder
+        mov(dx, ax);
+        cwd();                  // sign extends 16 to 32 bit
+        idiv(bx, dx:ax);        // math to find average
+        mov(ax, bx);            // move result into BX register
+
+        mov(baseAddr, eax);
+        mov(bx, [eax]);
+        //stdout.put("Average: ", (type int16 [eax]), nl);
+    jmp EXIT_AVG_FUNC;
+
+    AVG_INT32:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*4], ebx);
+            //stdout.put( (type int32 ecx), ": ", (type int32 [eax+ecx*4]), nl);
+            add(ebx, edx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov((type int32 arraySize), ebx);
+        dec(ebx);                // decrease by 1 to offset the placeholder
+        mov(edx, eax);
+        cdq();                  // sign extends 16 to 32 bit
+        idiv(ebx, edx:eax);        // math to find average
+        mov(eax, ebx);            // move result into BX register
+
+        mov(baseAddr, eax);
+        mov(ebx, [eax]);
+
+    EXIT_AVG_FUNC:
+    pop(eax); 
+end calc_average;
+
+procedure calc_sum(baseAddr: dword; arraySize: int32; dataType: int32);
+begin calc_sum;
+    push(eax);
+    
+    mov(baseAddr, eax);
+
+    cmp(dataType, 1);
+    je SUM_INT8;
+    cmp(dataType, 2);
+    je SUM_INT16;
+    cmp(dataType, 3);
+    je SUM_INT32;
+
+    SUM_INT8:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx], bl);
+            add(bl, dl);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(dl, [eax]);
+    jmp EXIT_SUM_FUNC;
+
+    SUM_INT16:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*2], bx);
+            //stdout.put( (type int32 ecx), ": ", (type int16 [eax+ecx*2]), nl);
+            add(bx, dx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(dx, [eax]);
+        //stdout.put("Average: ", (type int16 [eax]), nl);
+    jmp EXIT_SUM_FUNC;
+
+    SUM_INT32:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*4], ebx);
+            //stdout.put( (type int32 ecx), ": ", (type int32 [eax+ecx*4]), nl);
+            add(ebx, edx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(edx, [eax]);
+        //stdout.put("SUM: ", (type int32 [eax]), nl);
+
+    EXIT_SUM_FUNC:
+    pop(eax); 
+end calc_sum;
+
+procedure show_binary(value: dword; dataType: int32);
+begin show_binary;
+   pushad();
+
+    mov(1, ecx);
+    stdout.put("%");
+
+    cmp(dataType, 1);
+    je BINARY_INT8;
+    cmp(dataType, 2);
+    je BINARY_INT16;
+    cmp(dataType, 3);
+    je BINARY_INT32;
+
+
+    BINARY_INT8:
+        mov((type int8 value), al);
+        FORLOOP_BINARY_INT8:
+                shl(1, al);
+                jnc B_ZERO_INT8;
+                    stdout.put("1");
+                    jmp EXIT_B_ZERO_INT8;
+                B_ZERO_INT8:
+                    stdout.put("0");
+
+                EXIT_B_ZERO_INT8:
+
+                cmp(ecx, 4);
+                jne EXIT_UNDERSCORE_INT8;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT8:
+
+            inc(ecx);
+            cmp(ecx, 9);
+        jl FORLOOP_BINARY_INT8;
+        
+        stdout.newln();
+    jmp EXIT_BINARY_FUNC;
+
+    BINARY_INT16:
+        mov((type int16 value), ax);
+        FORLOOP_BINARY_INT16:
+                shl(1, ax);
+                jnc B_ZERO_INT16;
+                    stdout.put("1");
+                    jmp EXIT_B_ZERO_INT16;
+                B_ZERO_INT16:
+                    stdout.put("0");
+
+                EXIT_B_ZERO_INT16:
+
+                cmp(ecx, 4);
+                jne EXIT_UNDERSCORE_INT16_4;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT16_4:
+                cmp(ecx, 8);
+                jne EXIT_UNDERSCORE_INT16_8;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT16_8:
+                cmp(ecx, 12);
+                jne EXIT_UNDERSCORE_INT16_12;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT16_12:
+
+            inc(ecx);
+            cmp(ecx, 17);
+        jl FORLOOP_BINARY_INT16;
+        
+        stdout.newln();
+    jmp EXIT_BINARY_FUNC;
+    
+    BINARY_INT32:
+        mov((type int32 value), eax);
+        FORLOOP_BINARY_INT32:
+                shl(1, eax);
+                jnc B_ZERO_INT32;
+                    stdout.put("1");
+                    jmp EXIT_B_ZERO_INT32;
+                B_ZERO_INT32:
+                    stdout.put("0");
+
+                EXIT_B_ZERO_INT32:
+
+                cmp(ecx, 4);
+                jne EXIT_UNDERSCORE_INT32_4;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_4:
+                cmp(ecx, 8);
+                jne EXIT_UNDERSCORE_INT32_8;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_8:
+                cmp(ecx, 12);
+                jne EXIT_UNDERSCORE_INT32_12;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_12:
+                cmp(ecx, 16);
+                jne EXIT_UNDERSCORE_INT32_16;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_16:
+                cmp(ecx, 20);
+                jne EXIT_UNDERSCORE_INT32_20;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_20:
+                cmp(ecx, 24);
+                jne EXIT_UNDERSCORE_INT32_24;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_24:
+                cmp(ecx, 28);
+                jne EXIT_UNDERSCORE_INT32_28;
+                    stdout.put("_");
+                EXIT_UNDERSCORE_INT32_28:
+
+            inc(ecx);
+            cmp(ecx, 33);
+        jl FORLOOP_BINARY_INT32;
+        
+        stdout.newln();
+    jmp EXIT_BINARY_FUNC;
+
+    EXIT_BINARY_FUNC:
+    popad();
+end show_binary;
+
+procedure display_cells(baseAddr: dword; arraySize: int32; dataType: int32);
+begin display_cells;
+    pushad();
+
+    mov(baseAddr, eax);
+
+    cmp(display_type, 1);
+    je DISPLAY_DECIMAL;
+    cmp(display_type, 2);
+    je DISPLAY_BINARY;
+    cmp(display_type, 3);
+    je DISPLAY_HEX;
+
+    DISPLAY_DECIMAL:
+        mov(1, ecx);
+        cmp(dataType, 1);
+        je DECIMAL_INT8;
+        cmp(dataType, 2);
+        je DECIMAL_INT16;
+        cmp(dataType, 3);
+        je DECIMAL_INT32;
+
+        DECIMAL_INT8:
+            
+            stdout.put("Displaying int8 values in -> DECIMAL", nl,nl);
+            FORLOOP_DECIMAL_INT8:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx], bl);
+                    stdout.put( (type int32 ecx), ": ", (type int8 bl), nl );
+
+                inc(ecx);
+                jmp FORLOOP_DECIMAL_INT8;
+
+        DECIMAL_INT16:
+            
+            stdout.put("Displaying int16 values in -> DECIMAL", nl,nl);
+            FORLOOP_DECIMAL_INT16:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 2], bx);
+                    stdout.put( (type int32 ecx), ": ", (type int16 bx), nl );
+
+                inc(ecx);
+                jmp FORLOOP_DECIMAL_INT16;
+
+        DECIMAL_INT32:
+
+            stdout.put("Displaying int32 values in -> DECIMAL", nl,nl);
+            FORLOOP_DECIMAL_INT32:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 4], ebx);
+                    stdout.put( (type int32 ecx), ": ", (type int32 ebx), nl );
+
+                inc(ecx);
+                jmp FORLOOP_DECIMAL_INT32;
+
+    DISPLAY_BINARY:
+        mov(1, ecx);
+        cmp(dataType, 1);
+        je BINARY_INT8;
+        cmp(dataType, 2);
+        je BINARY_INT16;
+        cmp(dataType, 3);
+        je BINARY_INT32;
+
+        BINARY_INT8:
+            
+            FORLOOP_BINARY_INT8:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx], ebx);
+                    stdout.put( (type int32 ecx), ": " );
+                    show_binary(ebx, dataType);
+
+                inc(ecx);
+                jmp FORLOOP_BINARY_INT8;
+
+        BINARY_INT16:
+            
+            FORLOOP_BINARY_INT16:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 2], ebx);
+                    stdout.put( (type int32 ecx), ": " );
+                    show_binary(ebx, dataType);
+
+                inc(ecx);
+                jmp FORLOOP_BINARY_INT16;
+
+        BINARY_INT32:
+            
+            FORLOOP_BINARY_INT32:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 4], ebx);
+                    stdout.put( (type int32 ecx), ": " );
+                    show_binary(ebx, dataType);
+
+                inc(ecx);
+                jmp FORLOOP_BINARY_INT32;
+
+    DISPLAY_HEX:
+        mov(1, ecx);
+        cmp(dataType, 1);
+        je HEX_INT8;
+        cmp(dataType, 2);
+        je HEX_INT16;
+        cmp(dataType, 3);
+        je HEX_INT32;
+
+        HEX_INT8:
+            
+            FORLOOP_HEX_INT8:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx], bl);
+                    stdout.put( (type int32 ecx), ": $", bl, nl );
+
+                inc(ecx);
+                jmp FORLOOP_HEX_INT8;
+
+        HEX_INT16:
+            
+            FORLOOP_HEX_INT16:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 2], bx);
+                    stdout.put( (type int32 ecx), ": $", bx, nl );
+
+                inc(ecx);
+                jmp FORLOOP_HEX_INT16;
+
+        HEX_INT32:
+            
+            FORLOOP_HEX_INT32:
+
+                cmp(ecx, arraySize);
+                jnl EXIT_DISPLAY_FUNC;
+
+                    mov([eax + ecx * 4], ebx);
+                    stdout.put( (type int32 ecx), ": $", eax, nl );
+
+                inc(ecx);
+                jmp FORLOOP_HEX_INT32;
+
+    EXIT_DISPLAY_FUNC:
+
+    stdout.newln();
+    cmp(calc_choice, 1);
+    je CALC_CHOICE_SUM;
+    cmp(calc_choice, 2);
+    je CALC_CHOICE_AVG;
+    cmp(calc_choice, 3);
+    je CALC_CHOICE_MIN;
+    cmp(calc_choice, 4);
+    je CALC_CHOICE_MAX;
+
+    CALC_CHOICE_SUM:
+        cmp(dataType, 1);
+        je CALC_SUM_INT8;
+        cmp(dataType, 2);
+        je CALC_SUM_INT16;
+        cmp(dataType, 3);
+        je CALC_SUM_INT32;
+
+        CALC_SUM_INT8:
+            calc_sum(eax, arraySize, dataType);
+            stdout.put("SUM: ", (type int8 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_SUM_INT16:
+            calc_sum(eax, arraySize, dataType);
+            stdout.put("SUM: ", (type int16 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_SUM_INT32:
+            calc_sum(eax, arraySize, dataType);
+            stdout.put("SUM: ", (type int32 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+    CALC_CHOICE_AVG:
+        cmp(dataType, 1);
+        je CALC_AVG_INT8;
+        cmp(dataType, 2);
+        je CALC_AVG_INT16;
+        cmp(dataType, 3);
+        je CALC_AVG_INT32;
+
+        CALC_AVG_INT8:
+            calc_average(eax, arraySize, dataType);
+            stdout.put("AVERAGE: ", (type int8 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_AVG_INT16:
+            calc_average(eax, arraySize, dataType);
+            stdout.put("AVERAGE: ", (type int16 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_AVG_INT32:
+            calc_average(eax, arraySize, dataType);
+            stdout.put("AVERAGE: ", (type int32 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+    CALC_CHOICE_MIN:
+        cmp(dataType, 1);
+        je CALC_MIN_INT8;
+        cmp(dataType, 2);
+        je CALC_MIN_INT16;
+        cmp(dataType, 3);
+        je CALC_MIN_INT32;
+
+        CALC_MIN_INT8:
+            calc_min(eax, arraySize, dataType);
+            stdout.put("MINIMUM: ", (type int8 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_MIN_INT16:
+            calc_min(eax, arraySize, dataType);
+            stdout.put("MINIMUM: ", (type int16 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_MIN_INT32:
+            calc_min(eax, arraySize, dataType);
+            stdout.put("MINIMUM: ", (type int32 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+    CALC_CHOICE_MAX:
+        cmp(dataType, 1);
+        je CALC_MAX_INT8;
+        cmp(dataType, 2);
+        je CALC_MAX_INT16;
+        cmp(dataType, 3);
+        je CALC_MAX_INT32;
+
+        CALC_MAX_INT8:
+            calc_max(eax, arraySize, dataType);
+            stdout.put("MAXIMUM: ", (type int8 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_MAX_INT16:
+            calc_max(eax, arraySize, dataType);
+            stdout.put("MAXIMUM: ", (type int16 [eax]), nl);
+            jmp EXIT_CALC_FUNC;
+
+        CALC_MAX_INT32:
+            calc_max(eax, arraySize, dataType);
+            stdout.put("MAXIMUM: ", (type int32 [eax]), nl);
+
+
+
+    EXIT_CALC_FUNC:
+
+    popad();
+end display_cells;
+
+procedure edit_cells(baseAddr: dword; arraySize: int32; dataType: int32);
+begin edit_cells;
+    pushad();
+    
+    console.cls();
+
+    dec(arraySize);     // decrease array size to offset user inputs
+    get_input("Select cell number for updating: ",  1, arraySize);
+    mov(eax, ecx);
+
+
+    cmp(dataType, 1);
+    je EDIT_INT8;
+    cmp(dataType, 2);
+    je EDIT_INT16;
+    cmp(dataType, 3);
+    je EDIT_INT32;
+
+    EDIT_INT8:
+        mov(baseAddr, eax);
+        stdout.put("Current value of cell #", (type int32 ecx), ": ", (type int8 [eax+ecx]), nl,nl,nl,nl);
+        push(eax); // save base addr
+        get_input("Enter new value: ", -128, 127); mov(eax, ebx);
+        pop(eax); // load base addr
+        mov(bl, [eax+ecx]);
+        jmp EXIT_EDIT_FUNC;
+
+    EDIT_INT16:
+        mov(baseAddr, eax);
+        stdout.put("Current value of cell #", (type int32 ecx), ": ", (type int16 [eax+ecx*2]), nl,nl,nl,nl);
+        push(eax); // save base addr
+        get_input("Enter new value: ", -32768, 32767); mov(eax, ebx);
+        pop(eax); // load base addr
+        mov(bx, [eax+ecx*2]);
+        jmp EXIT_EDIT_FUNC;
+
+    EDIT_INT32:
+        mov(baseAddr, eax);
+        stdout.put("Current value of cell #", (type int32 ecx), ": ", (type int32 [eax+ecx*4]), nl,nl,nl,nl);
+        push(eax); // save base addr
+        get_input("Enter new value: ", -2147483648, 2147483647); mov(eax, ebx);
+        pop(eax); // load base addr
+        mov(ebx, [eax+ecx*4]);
+
+    EXIT_EDIT_FUNC:
+
+
+    popad();
+end edit_cells;
+
+begin Project2;
+   
+    BEGIN_PROGRAM:
+        console.cls();
+
+        get_input("Enter number of cells desired (2-10): ", 2, 10);
+        add(1, eax); // inc by 1 for placeholder
+        mov(eax, array_size); stdout.newln();
+
+        stdout.put("Select desired data type", nl);
+        stdout.put("[1] int8", nl, "[2] int16", nl, "[3] int32", nl,nl);
+        get_input("Your choice (1-3): ", 1, 3);
+        mov(eax, data_type); stdout.put(nl,nl);
+
+        cmp(data_type, 3);
+        jne NO_OFFSET;
+            mov(4, eax);
+        NO_OFFSET:
+
+        mul(array_size);
+        stdout.put( (type int32 eax), " bytes have been allocated", nl,nl );
+        mem.zalloc(eax); // bytes allocated and zeroed
+
+        stdout.put("Press ENTER to continue");
+        stdin.readLn();
+
+    MAIN_PROGRAM:
+        console.cls();
+        
+        display_cells(eax, array_size, data_type); stdout.newln();
+
+        stdout.put("[1] Edit a cell", nl);
+        stdout.put("[2] Change calculation", nl);
+        stdout.put("[3] Change presentation", nl);
+        stdout.put("[4] Reset and start over", nl);
+        stdout.put("[0] Exit program", nl,nl);
+
+        push(eax); // save base addr
+        get_input("Your choice (0-4): ", 0, 4);
+
+        cmp(eax, 0); 
+        je EXIT_PROGRAM;
+        cmp(eax, 1); 
+        je EDIT_CELLS_PROMPT;
+        cmp(eax, 2); 
+        je CHANGE_CALCULATION;
+        cmp(eax, 3); 
+        je CHANGE_PRESENTATION;
+        cmp(eax, 4); 
+        je BEGIN_PROGRAM;
+
+        EDIT_CELLS_PROMPT:
+            pop(eax); // load base addr
+            edit_cells(eax, array_size, data_type);
+            jmp MAIN_PROGRAM;
+
+        CHANGE_CALCULATION:
+            console.cls();
+            stdout.put("[1] Change to SUM", nl);
+            stdout.put("[2] Change to AVERAGE", nl);
+            stdout.put("[3] Change to MINIMUM VALUE", nl);
+            stdout.put("[4] Change to MAXIMUM VALUE", nl,nl);
+            get_input("Your choice (1-4): ", 1, 4);
+
+            cmp(eax, 1);
+            je SET_TO_SUM;
+            cmp(eax, 2);
+            je SET_TO_AVG;
+            cmp(eax, 3);
+            je SET_TO_MIN;
+            mov(4, calc_choice); stdout.put(nl,nl,nl,nl);
+            stdout.put("Press ENTER to continue");
+            stdin.readLn();
+            pop(eax); // load base addr
+            jmp MAIN_PROGRAM;
+
+            SET_TO_SUM:
+                mov(1, calc_choice); stdout.put(nl,nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+            SET_TO_AVG:
+                mov(2, calc_choice); stdout.put(nl,nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+            SET_TO_MIN:
+                mov(3, calc_choice); stdout.put(nl,nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+        CHANGE_PRESENTATION:
+           console.cls();
+           //stdout.put("Currently displaying int8 values in -> DECIMAL", nl,nl);
+
+           stdout.put("[1] Change to DECIMAL", nl);
+           stdout.put("[2] Change to BINARY", nl);
+           stdout.put("[3] Change to HEXADECIMAL", nl,nl);
+
+           get_input("Your choice (1-3): ", 1, 3);
+
+           cmp(eax, 1);
+           je CHANGE_TO_DECIMAL;
+           cmp(eax, 2);
+           je CHANGE_TO_BINARY;
+
+           // Change to Hexadecimal
+                mov(3, display_type); stdout.put(nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+           CHANGE_TO_DECIMAL:
+                mov(1, display_type); stdout.put(nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+          CHANGE_TO_BINARY:
+                mov(2, display_type); stdout.put(nl,nl,nl);
+                stdout.put("Press ENTER to continue");
+                stdin.readLn();
+                pop(eax); // load base addr
+                jmp MAIN_PROGRAM;
+
+    EXIT_PROGRAM:
+    pop(eax); // load base addr
+    mem.free(eax);
+end Project2;

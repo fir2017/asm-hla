@@ -1,0 +1,85 @@
+program GetSum;
+#include("stdlib.hhf");
+static
+    ERROR_FLAG      : uns8;
+procedure calc_sum(baseAddr: dword; arraySize: int32; dataType: int32);
+begin calc_sum;
+    push(eax);
+    
+    mov(baseAddr, eax);
+
+    cmp(dataType, 1);
+    je SUM_INT8;
+    cmp(dataType, 2);
+    je SUM_INT16;
+    cmp(dataType, 3);
+    je SUM_INT32;
+
+    SUM_INT8:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx], bl);
+            add(bl, dl);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(dl, [eax]);
+    jmp EXIT_SUM_FUNC;
+
+    SUM_INT16:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*2], bx);
+            //stdout.put( (type int32 ecx), ": ", (type int16 [eax+ecx*2]), nl);
+            add(bx, dx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(dx, [eax]);
+        //stdout.put("Average: ", (type int16 [eax]), nl);
+    jmp EXIT_SUM_FUNC;
+
+    SUM_INT32:
+        for(mov(1, ecx); ecx < arraySize; inc(ecx)) do
+            mov([eax+ecx*4], ebx);
+            //stdout.put( (type int32 ecx), ": ", (type int32 [eax+ecx*4]), nl);
+            add(ebx, edx);
+            if(@o) then
+                mov(1, ERROR_FLAG);
+            else
+                mov(0, ERROR_FLAG);
+            endif;
+        endfor;
+
+        mov(edx, [eax]);
+        //stdout.put("SUM: ", (type int32 [eax]), nl);
+
+    EXIT_SUM_FUNC:
+    pop(eax); 
+end calc_sum;
+
+begin GetSum;
+    
+    rand.randomize();
+
+    mem.zalloc(@size(int32)*10);
+
+    for(mov(1, ecx); ecx < 10; inc(ecx)) do
+        push(eax); // save array ptr addr
+        rand.range(-133228,312537);
+        mov(eax, ebx);
+        pop(eax);
+        mov(ebx, [eax + ecx * 4]);
+    endfor;
+
+    calc_sum(eax, 10, 3); 
+
+    mem.free(eax);
+
+end GetSum;
