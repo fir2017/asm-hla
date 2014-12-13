@@ -997,6 +997,8 @@ begin Project2;
         cmp(eax, 3); 
         je CHANGE_PRESENTATION;
         cmp(eax, 4); 
+        pop(eax);
+        mem.free(eax);
         je BEGIN_PROGRAM;
 
         EDIT_CELLS_PROMPT:
